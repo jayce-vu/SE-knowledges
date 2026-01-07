@@ -30,114 +30,130 @@ export default {
 
       // --- PUBLIC API ---
 
-      // GET /api/posts - List published posts
-      if (path === "/api/posts" && request.method === "GET") {
+      // GET /api/articles - List articles (Latest translations)
+      // Filter by language via ?lang=vi (default)
+      if (path === "/api/articles" && request.method === "GET") {
+        const lang = url.searchParams.get("lang") || "vi";
         const { results } = await env.DB.prepare(`
-          SELECT p.id, p.slug, p.title, p.excerpt, p.language, p.created_at, p.thumbnail_url, t.name as topic_name 
-          FROM posts p
-          LEFT JOIN topics t ON p.topic_id = t.id
-          WHERE p.is_published = 1 
-          ORDER BY p.created_at DESC
-        `).all();
+          SELECT a.id, t.slug, t.title, t.excerpt, t.language, a.created_at, a.thumbnail_url, top.name as topic_name 
+          FROM articles a
+          JOIN article_translations t ON a.id = t.article_id
+          LEFT JOIN topics top ON a.topic_id = top.id
+          WHERE a.is_published = 1 AND t.language = ?
+          ORDER BY a.created_at DESC
+        `).bind(lang).all();
         return json(results);
       }
 
-      // GET /api/posts/:slug - Get post details
-      if (path.startsWith("/api/posts/") && request.method === "GET") {
+      // GET /api/articles/:slug - Get single article by slug
+      if (path.startsWith("/api/articles/") && request.method === "GET") {
         const slug = path.split("/").pop();
-        const post = await env.DB.prepare(`
-          SELECT p.*, t.name as topic_name, u.username as author_name
-          FROM posts p
-          LEFT JOIN topics t ON p.topic_id = t.id
-          LEFT JOIN users u ON p.author_id = u.id
-          WHERE p.slug = ?
-        `).bind(slug).first();
         
-        if (!post) return error("Post not found", 404);
+        // Find translation first
+        const translation = await env.DB.prepare(`
+            SELECT * FROM article_translations WHERE slug = ?
+        `).bind(slug).first();
 
-        // Get tags
+        if (!translation) return error("Article not found", 404);
+
+        // Get Article details
+        const article = await env.DB.prepare(`
+            SELECT a.*, top.name as topic_name, u.username as author_name
+            FROM articles a
+            LEFT JOIN topics top ON a.topic_id = top.id
+            LEFT JOIN users u ON a.author_id = u.id
+            WHERE a.id = ?
+        `).bind(translation.article_id).first();
+
+        // Get Tags
         const { results: tags } = await env.DB.prepare(`
-          SELECT t.name, t.slug 
-          FROM tags t
-          JOIN post_tags pt ON t.id = pt.tag_id
-          WHERE pt.post_id = ?
-        `).bind(post.id).all();
+            SELECT t.name, t.slug 
+            FROM tags t
+            JOIN article_tags at ON t.id = at.tag_id
+            WHERE at.article_id = ?
+        `).bind(translation.article_id).all();
 
-        return json({ ...post, tags });
-      }
-
-      // GET /api/topics
-      if (path === "/api/topics" && request.method === "GET") {
-         const { results } = await env.DB.prepare("SELECT * FROM topics").all();
-         return json(results);
-      }
-
-      // GET /api/tags
-      if (path === "/api/tags" && request.method === "GET") {
-         const { results } = await env.DB.prepare("SELECT * FROM tags").all();
-         return json(results);
-      }
-
-      // --- COMMENTS ---
-      // GET /api/comments?post_slug=xxx
-      if (path === "/api/comments" && request.method === "GET") {
-          const postSlug = url.searchParams.get("post_slug");
-          if (!postSlug) return error("Missing post_slug param");
-
-          const { results } = await env.DB.prepare(`
-            SELECT c.id, c.content, c.created_at, c.guest_name, u.username
-            FROM comments c
-            JOIN posts p ON c.post_id = p.id
-            LEFT JOIN users u ON c.user_id = u.id
-            WHERE p.slug = ? AND c.is_approved = 1
-            ORDER BY c.created_at DESC
-          `).bind(postSlug).all();
-
-          return json(results);
-      }
-
-      // POST /api/comments
-      if (path === "/api/comments" && request.method === "POST") {
-          const body = await request.json();
-          const { post_slug, content, guest_name, guest_email } = body;
-          
-          const post = await env.DB.prepare("SELECT id FROM posts WHERE slug = ?").bind(post_slug).first();
-          if (!post) return error("Post not found", 404);
-
-          const now = Math.floor(Date.now() / 1000);
-          // Auto approve for simplicity, in real app set is_approved=0
-          await env.DB.prepare(
-            `INSERT INTO comments (post_id, content, guest_name, guest_email, created_at, is_approved)
-             VALUES (?, ?, ?, ?, ?, 1)`
-          ).bind(post.id, content, guest_name, guest_email, now).run();
-
-          return json({ success: true, message: "Comment submitted" }, 201);
+        return json({ ...article, ...translation, tags });
       }
 
       // --- ADMIN API (Mock Auth) ---
-      // In production, verify JWT token here
       
-      // POST /api/admin/posts
-      if (path === "/api/admin/posts" && request.method === "POST") {
+      // GET /api/admin/articles/:id - Get FULL article with ALL translations for editing
+      if (path.startsWith("/api/admin/articles/") && request.method === "GET") {
+          const id = path.split("/").pop();
+          
+          const article = await env.DB.prepare("SELECT * FROM articles WHERE id = ?").bind(id).first();
+          if (!article) return error("Article not found", 404);
+
+          const { results: translations } = await env.DB.prepare(
+              "SELECT * FROM article_translations WHERE article_id = ?"
+          ).bind(id).all();
+
+           const { results: tags } = await env.DB.prepare(`
+            SELECT tag_id FROM article_tags WHERE article_id = ?
+        `).bind(id).all();
+
+          return json({ article, translations, tag_ids: tags.map(t => t.tag_id) });
+      }
+
+      // POST /api/admin/articles - Create/Update Article with multiple translations
+      if (path === "/api/admin/articles" && request.method === "POST") {
         const body = await request.json();
-        const { slug, title, content, topic_id, language, pair_id, tags } = body; // tags is array of tag_ids
+        const { id, topic_id, author_id, thumbnail_url, is_published, tags, translations } = body; 
+        // translations is array: [{ lang: 'vi', title: '...', slug: '...', content: '...' }, { lang: 'en', ... }]
+        
         const now = Math.floor(Date.now() / 1000);
+        let articleId = id;
 
-        const result = await env.DB.prepare(
-          `INSERT INTO posts (slug, title, content, topic_id, language, pair_id, created_at, updated_at, is_published)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`
-        ).bind(slug, title, content, topic_id, language, pair_id, now, now).run();
-
-        const postId = result.meta.last_row_id;
-
-        // Insert Tags
-        if (tags && Array.isArray(tags)) {
-            const stmt = env.DB.prepare("INSERT INTO post_tags (post_id, tag_id) VALUES (?, ?)");
-            const batch = tags.map(tagId => stmt.bind(postId, tagId));
-            await env.DB.batch(batch);
+        if (!translations || !Array.isArray(translations) || translations.length === 0) {
+            return error("At least one translation is required");
         }
 
-        return json({ success: true, id: postId }, 201);
+        // Transaction (Batching manually as D1 transaction support is specific)
+        // 1. Create or Update Article Parent
+        if (!articleId) {
+            const result = await env.DB.prepare(
+                `INSERT INTO articles (topic_id, author_id, thumbnail_url, is_published, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?)`
+            ).bind(topic_id, author_id, thumbnail_url, is_published ? 1 : 0, now, now).run();
+            articleId = result.meta.last_row_id;
+        } else {
+            await env.DB.prepare(
+                `UPDATE articles SET topic_id=?, author_id=?, thumbnail_url=?, is_published=?, updated_at=? WHERE id=?`
+            ).bind(topic_id, author_id, thumbnail_url, is_published ? 1 : 0, now, articleId).run();
+        }
+
+        // 2. Upsert Translations
+        // Note: D1 doesn't support generic batch upsert cleanly in one statement easily for varying params, 
+        // so we loop. For high volume, use batch().
+        const stmts = [];
+        
+        for (const t of translations) {
+             stmts.push(env.DB.prepare(
+                 `INSERT INTO article_translations (article_id, language, slug, title, content, excerpt, meta_description, updated_at)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                  ON CONFLICT(article_id, language) DO UPDATE SET
+                  slug=excluded.slug, title=excluded.title, content=excluded.content, excerpt=excluded.excerpt, meta_description=excluded.meta_description, updated_at=excluded.updated_at`
+             ).bind(articleId, t.language, t.slug, t.title, t.content, t.excerpt, t.meta_description, now));
+        }
+
+        // 3. Update Tags (Delete all and re-insert is simplest for now)
+        if (tags) {
+             stmts.push(env.DB.prepare("DELETE FROM article_tags WHERE article_id = ?").bind(articleId));
+             for (const tagId of tags) {
+                 stmts.push(env.DB.prepare("INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)").bind(articleId, tagId));
+             }
+        }
+
+        await env.DB.batch(stmts);
+
+        return json({ success: true, id: articleId }, 201);
+      }
+
+      // Common endpoints
+      if (path === "/api/topics" && request.method === "GET") {
+         const { results } = await env.DB.prepare("SELECT * FROM topics").all();
+         return json(results);
       }
 
       return error("Route not found", 404);
@@ -148,9 +164,9 @@ export default {
   },
 };
 
-// Extracted View Count Logic (Same as before)
+// Extracted View Count Logic
 async function handleViewCount(request, env, url, corsHeaders) {
-    const key = url.searchParams.get("key");
+    const key = url.searchParams.get("key"); // This is the slug
     const ip = request.headers.get("CF-Connecting-IP") || "unknown";
 
     if (!key) {
