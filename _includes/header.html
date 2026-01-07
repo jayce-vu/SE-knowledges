@@ -30,6 +30,20 @@
         <a class="button" href="{{ en_link }}">English</a>
         <a class="button" href="{{ vi_link }}">Tiếng Việt</a>
       {% endif %}
+      
+      <!-- Auth Button (Hidden by default, JS toggles) -->
+      <a class="button" id="auth-btn" href="{{ '/login.html' | relative_url }}" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
     </div>
   </div>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem("token");
+      const authBtn = document.getElementById("auth-btn");
+      if (token) {
+        authBtn.textContent = "Admin";
+        authBtn.href = "{{ '/admin.html' | relative_url }}";
+      }
+    });
+  </script>
 </header>
