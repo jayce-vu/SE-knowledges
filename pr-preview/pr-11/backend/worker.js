@@ -76,6 +76,44 @@ export default {
         return json({ ...article, ...translation, tags });
       }
 
+      // --- COMMENTS ---
+      // GET /api/comments?post_slug=xxx
+      if (path === "/api/comments" && request.method === "GET") {
+          const postSlug = url.searchParams.get("post_slug");
+          if (!postSlug) return error("Missing post_slug param");
+
+          // Resolve slug to article_id first via article_translations
+          const { results } = await env.DB.prepare(`
+            SELECT c.id, c.content, c.created_at, c.guest_name, u.username
+            FROM comments c
+            JOIN article_translations t ON c.article_id = t.article_id
+            LEFT JOIN users u ON c.user_id = u.id
+            WHERE t.slug = ? AND c.is_approved = 1
+            ORDER BY c.created_at DESC
+          `).bind(postSlug).all();
+
+          return json(results);
+      }
+
+      // POST /api/comments
+      if (path === "/api/comments" && request.method === "POST") {
+          const body = await request.json();
+          const { post_slug, content, guest_name, guest_email } = body;
+          
+          // Find article_id from slug
+          const translation = await env.DB.prepare("SELECT article_id FROM article_translations WHERE slug = ?").bind(post_slug).first();
+          if (!translation) return error("Post not found", 404);
+
+          const now = Math.floor(Date.now() / 1000);
+          // Auto approve for simplicity
+          await env.DB.prepare(
+            `INSERT INTO comments (article_id, content, guest_name, guest_email, created_at, is_approved)
+             VALUES (?, ?, ?, ?, ?, 1)`
+          ).bind(translation.article_id, content, guest_name, guest_email, now).run();
+
+          return json({ success: true, message: "Comment submitted" }, 201);
+      }
+
       // --- ADMIN API (Mock Auth) ---
       
       // GET /api/admin/articles/:id - Get FULL article with ALL translations for editing
@@ -100,7 +138,6 @@ export default {
       if (path === "/api/admin/articles" && request.method === "POST") {
         const body = await request.json();
         const { id, topic_id, author_id, thumbnail_url, is_published, tags, translations } = body; 
-        // translations is array: [{ lang: 'vi', title: '...', slug: '...', content: '...' }, { lang: 'en', ... }]
         
         const now = Math.floor(Date.now() / 1000);
         let articleId = id;
@@ -109,7 +146,7 @@ export default {
             return error("At least one translation is required");
         }
 
-        // Transaction (Batching manually as D1 transaction support is specific)
+        // Transaction
         // 1. Create or Update Article Parent
         if (!articleId) {
             const result = await env.DB.prepare(
@@ -124,10 +161,7 @@ export default {
         }
 
         // 2. Upsert Translations
-        // Note: D1 doesn't support generic batch upsert cleanly in one statement easily for varying params, 
-        // so we loop. For high volume, use batch().
         const stmts = [];
-        
         for (const t of translations) {
              stmts.push(env.DB.prepare(
                  `INSERT INTO article_translations (article_id, language, slug, title, content, excerpt, meta_description, updated_at)
@@ -137,7 +171,7 @@ export default {
              ).bind(articleId, t.language, t.slug, t.title, t.content, t.excerpt, t.meta_description, now));
         }
 
-        // 3. Update Tags (Delete all and re-insert is simplest for now)
+        // 3. Update Tags
         if (tags) {
              stmts.push(env.DB.prepare("DELETE FROM article_tags WHERE article_id = ?").bind(articleId));
              for (const tagId of tags) {
@@ -153,6 +187,11 @@ export default {
       // Common endpoints
       if (path === "/api/topics" && request.method === "GET") {
          const { results } = await env.DB.prepare("SELECT * FROM topics").all();
+         return json(results);
+      }
+      
+      if (path === "/api/tags" && request.method === "GET") {
+         const { results } = await env.DB.prepare("SELECT * FROM tags").all();
          return json(results);
       }
 
