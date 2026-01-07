@@ -39,3 +39,8 @@ exclude:
   - .bundle
   - .jekyll-cache
   - _site
+
+# View Count API Configuration
+# Deploy the worker in /backend/worker.js to Cloudflare Workers and paste the URL here.
+# For local testing, run: node backend/mock-server.js
+view_api_url: "https://post-views.jayce-it-work.workers.dev" # e.g. https://views.your-subdomain.workers.dev
