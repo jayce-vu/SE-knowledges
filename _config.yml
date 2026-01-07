@@ -40,4 +40,8 @@ exclude:
   - README.md
   - CONTRIBUTING.md
   - templates
+  - vendor
+  - .bundle
+  - .jekyll-cache
+  - _site
 
