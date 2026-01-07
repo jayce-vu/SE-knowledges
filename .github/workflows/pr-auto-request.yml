@@ -2,7 +2,7 @@ name: PR automation (request reviewer + assign)
 
 on:
   pull_request:
-    types: [opened, reopened, ready_for_review]
+    types: [opened, reopened, ready_for_review, synchronize]
 
 permissions:
   contents: read
@@ -23,6 +23,10 @@ jobs:
             const pull_number = context.payload.pull_request.number;
 
             // Request review from repo owner (your account)
+            const prAuthor = context.payload.pull_request.user.login;
+            if (prAuthor === owner) {
+              core.info(`PR author is the repo owner (${owner}); GitHub typically won't show a self-review request. Skipping reviewer request.`);
+            } else {
             try {
               await github.rest.pulls.requestReviewers({
                 owner,
@@ -33,9 +37,9 @@ jobs:
             } catch (e) {
               core.info(`requestReviewers skipped: ${e.message}`);
             }
+            }
 
             // Ensure there's at least one assignee (prefer PR author, fallback to owner)
-            const prAuthor = context.payload.pull_request.user.login;
             try {
               await github.rest.issues.addAssignees({
                 owner,
