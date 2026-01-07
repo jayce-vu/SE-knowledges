@@ -1,0 +1,63 @@
+name: PR automation (request reviewer + assign)
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  auto:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.draft == false }}
+    steps:
+      - name: Request reviewer = repo owner, ensure assignee
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pull_number = context.payload.pull_request.number;
+
+            // Request review from repo owner (your account)
+            const prAuthor = context.payload.pull_request.user.login;
+            if (prAuthor === owner) {
+              core.info(`PR author is the repo owner (${owner}); GitHub typically won't show a self-review request. Skipping reviewer request.`);
+            } else {
+            try {
+              await github.rest.pulls.requestReviewers({
+                owner,
+                repo,
+                pull_number,
+                reviewers: [owner],
+              });
+            } catch (e) {
+              core.info(`requestReviewers skipped: ${e.message}`);
+            }
+            }
+
+            // Ensure there's at least one assignee (prefer PR author, fallback to owner)
+            try {
+              await github.rest.issues.addAssignees({
+                owner,
+                repo,
+                issue_number: pull_number,
+                assignees: [prAuthor],
+              });
+            } catch (e) {
+              core.info(`addAssignees(prAuthor=${prAuthor}) failed: ${e.message}`);
+              try {
+                await github.rest.issues.addAssignees({
+                  owner,
+                  repo,
+                  issue_number: pull_number,
+                  assignees: [owner],
+                });
+              } catch (e2) {
+                core.info(`addAssignees(owner=${owner}) failed: ${e2.message}`);
+              }
+            }
+
