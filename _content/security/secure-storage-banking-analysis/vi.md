@@ -1,9 +1,11 @@
 ---
+layout: post
 title: "PHÂN TÍCH CHI TIẾT: SECURE STORAGE CHUẨN BANKING (ANDROID & iOS)"
 date: 2026-01-07
 tags: [android, ios, security, banking]
 summary: "Phân tích chi tiết về Secure Storage chuẩn Banking trên Android và iOS, bao gồm Android Keystore, iOS Keychain, Secure Enclave và các tiêu chuẩn bảo mật quan trọng."
 pair_id: secure-storage-banking-analysis
+lang: vi
 ---
 
 ## Bối cảnh
