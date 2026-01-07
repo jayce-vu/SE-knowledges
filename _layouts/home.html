@@ -13,16 +13,23 @@ layout: default
 <div style="height: 16px;"></div>
 
 <div class="panel">
-  {% assign items = page.collection_name | default: '' %}
-  {% if items == 'en_posts' %}
-    {% assign posts = site.en_posts | sort: 'date' | reverse %}
-  {% elsif items == 'vi_posts' %}
-    {% assign posts = site.vi_posts | sort: 'date' | reverse %}
+  <!-- 
+    Logic lấy danh sách bài viết từ collection 'content'.
+    Lọc theo ngôn ngữ hiện tại của trang (page.lang) nếu có.
+  -->
+  {% assign all_posts = site.content | sort: 'date' | reverse %}
+  
+  {% if page.lang == 'vi' %}
+    {% assign posts = all_posts | where: 'lang', 'vi' %}
+  {% elsif page.lang == 'en' %}
+    {% assign posts = all_posts | where: 'lang', 'en' %}
   {% else %}
-    {% assign posts = site.en_posts | sort: 'date' | reverse %}
+    <!-- Nếu không xác định ngôn ngữ trang, hiển thị tất cả (hoặc fallback về một ngôn ngữ) -->
+    {% assign posts = all_posts %}
   {% endif %}
 
-  <h2 style="margin-top: 0;">Posts</h2>
+  <h2 style="margin-top: 0;">{% if page.lang == 'vi' %}Bài viết mới{% else %}Recent Posts{% endif %}</h2>
+  
   <ul class="post-list">
     {% for p in posts %}
       <li>
@@ -35,4 +42,3 @@ layout: default
     {% endfor %}
   </ul>
 </div>
-
