@@ -28,8 +28,22 @@
         <a class="button" href="/SE-knowledges/pr-preview/pr-11/en/">English</a>
         <a class="button" href="/SE-knowledges/pr-preview/pr-11/vi/">Tiếng Việt</a>
       
+      
+      <!-- Auth Button (Hidden by default, JS toggles) -->
+      <a class="button" id="auth-btn" href="/SE-knowledges/pr-preview/pr-11/login.html" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
     </div>
   </div>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem("token");
+      const authBtn = document.getElementById("auth-btn");
+      if (token) {
+        authBtn.textContent = "Admin";
+        authBtn.href = "/SE-knowledges/pr-preview/pr-11/admin.html";
+      }
+    });
+  </script>
 </header>
 
     <main class="wrap">
