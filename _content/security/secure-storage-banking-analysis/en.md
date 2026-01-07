@@ -1,9 +1,11 @@
 ---
+layout: post
 title: "DETAILED ANALYSIS: BANKING GRADE SECURE STORAGE (ANDROID & iOS)"
 date: 2026-01-07
 tags: [android, ios, security, banking]
 summary: "Detailed analysis of Banking Grade Secure Storage on Android and iOS, including Android Keystore, iOS Keychain, Secure Enclave, and critical security standards."
 pair_id: secure-storage-banking-analysis
+lang: en
 ---
 
 ## Context

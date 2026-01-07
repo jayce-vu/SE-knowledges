@@ -1,18 +1,10 @@
 ---
-layout: default
+layout: home
 title: SE-knowledges
+description: Technical notes in English.
+lang: en
 ---
 
-<div class="panel">
-  <h1 style="margin-top: 0;">SE-knowledges</h1>
-  <p class="post-meta">
-    A small knowledge base for software engineering, technology, and practical notes.
-    <br />
-    Kho kiến thức nhỏ về kỹ thuật phần mềm, công nghệ và ghi chú thực chiến.
-  </p>
-  <p>
-    <a class="button" href="{{ '/en/' | relative_url }}">Read in English</a>
-    <a class="button" href="{{ '/vi/' | relative_url }}">Đọc tiếng Việt</a>
-  </p>
-</div>
+Welcome to my knowledge base. Here you can find technical notes and articles about software engineering.
 
+[Xem phiên bản Tiếng Việt]({{ '/vi/' | relative_url }})

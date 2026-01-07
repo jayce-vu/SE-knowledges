@@ -7,9 +7,10 @@ on:
       - reopened
       - synchronize
       - closed
+  workflow_dispatch:
 
 concurrency:
-  group: preview-${{ github.event.pull_request.number }}
+  group: preview-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -36,12 +37,29 @@ jobs:
         if: github.event.action != 'closed'
         uses: actions/configure-pages@v5
 
+      - name: Find Current PR
+        if: github.event.action != 'closed'
+        uses: jwalton/gh-find-current-pr@v1
+        id: findPr
+        with:
+          state: open
+
       - name: Build site
         if: github.event.action != 'closed'
         run: |
           # Construct the base path for the preview
           # Usually: /<repo>/pr-preview/pr-<number>
-          BASE_PATH="${{ steps.pages.outputs.base_path }}/pr-preview/pr-${{ github.event.pull_request.number }}"
+          PR_NUM="${{ github.event.pull_request.number }}"
+          if [ -z "$PR_NUM" ]; then
+            PR_NUM="${{ steps.findPr.outputs.pr }}"
+          fi
+          
+          if [ -z "$PR_NUM" ]; then
+            echo "Could not find PR number, failing build."
+            exit 1
+          fi
+
+          BASE_PATH="${{ steps.pages.outputs.base_path }}/pr-preview/pr-$PR_NUM"
           echo "Building for base path: $BASE_PATH"
           bundle exec jekyll build --baseurl "$BASE_PATH"
 
