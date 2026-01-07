@@ -3,6 +3,13 @@
 const API_URL = window.API_URL || "https://post-views.jayce-it-work.workers.dev"; 
 
 document.addEventListener("DOMContentLoaded", function() {
+    // Check Auth
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login.html";
+        return;
+    }
+
     initTabs();
     loadTopics();
     loadPosts();
@@ -179,7 +186,10 @@ async function savePost() {
 
         const res = await fetch(`${API_URL}/api/admin/articles`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token") 
+            },
             body: JSON.stringify(payload)
         });
 

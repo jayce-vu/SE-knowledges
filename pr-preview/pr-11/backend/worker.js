@@ -136,6 +136,9 @@ export default {
 
       // POST /api/admin/articles - Create/Update Article with multiple translations
       if (path === "/api/admin/articles" && request.method === "POST") {
+        const authHeader = request.headers.get("Authorization");
+        if (!authHeader) return error("Unauthorized", 401); // Simple check
+
         const body = await request.json();
         const { id, topic_id, author_id, thumbnail_url, is_published, tags, translations } = body; 
         
@@ -202,6 +205,47 @@ export default {
          ).bind(name, slug, description).run();
          
          return json({ success: true, id: result.meta.last_row_id }, 201);
+      }
+
+      // --- AUTH API ---
+      
+      // POST /api/register - Simple registration (In prod, disable or secure this)
+      if (path === "/api/register" && request.method === "POST") {
+          const { username, password, email } = await request.json();
+          if (!username || !password || !email) return error("Missing fields");
+
+          // Hash password (simple mock hash, use bcrypt/argon2 in prod)
+          // Since Worker environment is limited, we might need SubtleCrypto
+          // For MVP, we store plain text or simple base64 (NOT SECURE for production)
+          // TODO: Implement proper hashing
+          const password_hash = btoa(password); 
+
+          const now = Math.floor(Date.now() / 1000);
+          
+          try {
+            const result = await env.DB.prepare(
+                "INSERT INTO users (username, email, password_hash, role, created_at) VALUES (?, ?, ?, 'author', ?)"
+            ).bind(username, email, password_hash, now).run();
+            return json({ success: true, id: result.meta.last_row_id }, 201);
+          } catch(e) {
+            return error("User already exists or error: " + e.message);
+          }
+      }
+
+      // POST /api/login
+      if (path === "/api/login" && request.method === "POST") {
+          const { username, password } = await request.json();
+          const user = await env.DB.prepare("SELECT * FROM users WHERE username = ?").bind(username).first();
+          
+          if (!user || user.password_hash !== btoa(password)) {
+              return error("Invalid credentials", 401);
+          }
+
+          // Generate simple token (In prod, use JWT signed with secret)
+          // Mock token: "userid:username:signature"
+          const token = btoa(`${user.id}:${user.username}:${Date.now()}`);
+
+          return json({ success: true, token, user: { id: user.id, username: user.username, role: user.role } });
       }
       
       if (path === "/api/tags" && request.method === "GET") {
