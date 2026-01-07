@@ -6,14 +6,30 @@
     </div>
     <div>
       {% assign current_lang = page.lang | default: 'en' %}
+      
+      {% assign en_link = '/en/' | relative_url %}
+      {% assign vi_link = '/vi/' | relative_url %}
+
+      {% if page.pair_id %}
+        {% assign en_post = site.content | where: "pair_id", page.pair_id | where: "lang", "en" | first %}
+        {% assign vi_post = site.content | where: "pair_id", page.pair_id | where: "lang", "vi" | first %}
+        
+        {% if en_post %}
+          {% assign en_link = en_post.url | relative_url %}
+        {% endif %}
+        
+        {% if vi_post %}
+          {% assign vi_link = vi_post.url | relative_url %}
+        {% endif %}
+      {% endif %}
+
       {% if current_lang == 'vi' %}
-        <a class="button" href="{{ '/en/' | relative_url }}">English</a>
-        <a class="button" href="{{ '/vi/' | relative_url }}">Tiếng Việt</a>
+        <a class="button" href="{{ en_link }}">English</a>
+        <a class="button" href="{{ vi_link }}">Tiếng Việt</a>
       {% else %}
-        <a class="button" href="{{ '/en/' | relative_url }}">English</a>
-        <a class="button" href="{{ '/vi/' | relative_url }}">Tiếng Việt</a>
+        <a class="button" href="{{ en_link }}">English</a>
+        <a class="button" href="{{ vi_link }}">Tiếng Việt</a>
       {% endif %}
     </div>
   </div>
 </header>
-
