@@ -7,6 +7,7 @@ on:
       - reopened
       - synchronize
       - closed
+  workflow_dispatch:
 
 concurrency:
   group: preview-${{ github.event.pull_request.number }}
