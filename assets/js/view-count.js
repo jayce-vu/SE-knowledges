@@ -9,11 +9,16 @@ document.addEventListener("DOMContentLoaded", function() {
   // API URL - set this in your _config.yml or hardcode it here if you deployed the worker
   // Example: https://views.your-worker.workers.dev
   // We read it from a global variable if set, otherwise fallback or warn
-  const apiUrl = window.VIEW_API_URL;
+  let apiUrl = window.VIEW_API_URL;
 
   if (!apiUrl || apiUrl === '') {
     console.warn('View count API URL not configured.');
     return;
+  }
+
+  // Ensure protocol is present
+  if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
+    apiUrl = 'https://' + apiUrl;
   }
 
   // Fetch and increment view count
