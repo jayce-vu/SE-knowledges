@@ -42,4 +42,5 @@ exclude:
 
 # View Count API Configuration
 # Deploy the worker in /backend/worker.js to Cloudflare Workers and paste the URL here.
-view_api_url: "" # e.g. https://views.your-subdomain.workers.dev
+# For local testing, run: node backend/mock-server.js
+view_api_url: "http://localhost:8787"
