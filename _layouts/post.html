@@ -2,9 +2,16 @@
 layout: default
 ---
 
+{% if page.pair_id %}
+<meta name="pair-id" content="{{ page.pair_id }}">
+{% endif %}
+
 <article class="panel">
   <div class="post-meta">
     {{ page.date | date: "%Y-%m-%d" }}
+    <span id="view-count-container" style="display:none">
+      · <span id="view-count">...</span> views
+    </span>
     {% if page.tags %}
       ·
       {% for t in page.tags %}
@@ -36,6 +43,11 @@ layout: default
     {{ content }}
   </div>
 </article>
+
+<script>
+  window.VIEW_API_URL = "{{ site.view_api_url }}";
+</script>
+<script src="{{ '/assets/js/view-count.js' | relative_url }}"></script>
 
 <div style="height: 16px;"></div>
 
