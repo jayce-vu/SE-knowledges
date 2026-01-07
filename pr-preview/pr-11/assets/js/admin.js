@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Event Listeners
     document.getElementById("btn-save").addEventListener("click", savePost);
     document.getElementById("btn-new").addEventListener("click", resetForm);
+    document.getElementById("btn-create-topic").addEventListener("click", createTopic);
 
     // Auto-generate slugs
     document.getElementById("title-vi").addEventListener("input", (e) => {
@@ -213,4 +214,31 @@ function slugify(text) {
         .replace(/\-\-+/g, '-')         // Replace multiple - with single -
         .replace(/^-+/, '')             // Trim - from start of text
         .replace(/-+$/, '');            // Trim - from end of text
+}
+
+async function createTopic() {
+    const name = prompt("Nhập tên Chủ đề (Topic Name):");
+    if (!name) return;
+
+    const slug = slugify(name);
+    const description = prompt("Nhập mô tả (Optional):") || "";
+
+    try {
+        const res = await fetch(`${API_URL}/api/topics`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, slug, description })
+        });
+
+        if (res.ok) {
+            alert("Tạo topic thành công!");
+            loadTopics(); // Refresh dropdown
+        } else {
+            const err = await res.json();
+            alert("Lỗi: " + (err.error || "Unknown"));
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Lỗi hệ thống");
+    }
 }

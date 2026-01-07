@@ -190,6 +190,20 @@ export default {
          return json(results);
       }
       
+      // POST /api/topics - Create Topic
+      if (path === "/api/topics" && request.method === "POST") {
+         const body = await request.json();
+         const { name, slug, description } = body;
+         
+         if (!name || !slug) return error("Name and slug are required");
+
+         const result = await env.DB.prepare(
+            "INSERT INTO topics (name, slug, description) VALUES (?, ?, ?)"
+         ).bind(name, slug, description).run();
+         
+         return json({ success: true, id: result.meta.last_row_id }, 201);
+      }
+      
       if (path === "/api/tags" && request.method === "GET") {
          const { results } = await env.DB.prepare("SELECT * FROM tags").all();
          return json(results);
