@@ -1,0 +1,125 @@
+name: PR automation (bot creates PR)
+
+on:
+  push:
+    branches:
+      - "cursor/**"
+  workflow_dispatch:
+    inputs:
+      head:
+        description: "Head branch (e.g. cursor/my-change)"
+        required: true
+      base:
+        description: "Base branch"
+        required: false
+        default: "main"
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  create_pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create PR if missing, request reviewer, set assignee, enable auto-merge
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const base =
+              (context.eventName === "workflow_dispatch" ? (context.payload.inputs?.base || "main") : "main");
+            const head =
+              (context.eventName === "workflow_dispatch" ? context.payload.inputs?.head : context.ref.replace("refs/heads/", ""));
+
+            if (!head || head === base) {
+              core.info(`Nothing to do (head=${head}, base=${base}).`);
+              return;
+            }
+
+            // 1) Find existing open PR for head->base
+            const existing = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: "open",
+              base,
+              head: `${owner}:${head}`,
+              per_page: 1,
+            });
+
+            let pr = existing.data[0];
+
+            // 2) Create PR if missing (author will be github-actions[bot])
+            if (!pr) {
+              const title =
+                (context.payload.head_commit?.message || `chore: open PR for ${head}`).split("\n")[0].trim();
+              const body = [
+                "## Summary",
+                `Auto-created PR for branch \`${head}\`.`,
+                "",
+                "## Notes",
+                `- Reviewer: \`${owner}\``,
+                "- Auto-merge: will be enabled when possible",
+                "",
+              ].join("\n");
+
+              const created = await github.rest.pulls.create({
+                owner,
+                repo,
+                title,
+                head,
+                base,
+                body,
+              });
+              pr = created.data;
+              core.info(`Created PR #${pr.number}: ${pr.html_url}`);
+            } else {
+              core.info(`PR already exists #${pr.number}: ${pr.html_url}`);
+            }
+
+            // 3) Request review from repo owner (works because PR author is the bot)
+            try {
+              await github.rest.pulls.requestReviewers({
+                owner,
+                repo,
+                pull_number: pr.number,
+                reviewers: [owner],
+              });
+            } catch (e) {
+              core.info(`requestReviewers skipped: ${e.message}`);
+            }
+
+            // 4) Ensure an assignee (owner)
+            try {
+              await github.rest.issues.addAssignees({
+                owner,
+                repo,
+                issue_number: pr.number,
+                assignees: [owner],
+              });
+            } catch (e) {
+              core.info(`addAssignees skipped: ${e.message}`);
+            }
+
+            // 5) Enable auto-merge (squash) if repo allows it
+            try {
+              await github.graphql(
+                `
+                  mutation EnableAutoMerge($pullRequestId: ID!) {
+                    enablePullRequestAutoMerge(
+                      input: { pullRequestId: $pullRequestId, mergeMethod: SQUASH }
+                    ) {
+                      pullRequest { number }
+                    }
+                  }
+                `,
+                { pullRequestId: pr.node_id }
+              );
+            } catch (e) {
+              core.info(`enable auto-merge skipped: ${e.message}`);
+            }
+
