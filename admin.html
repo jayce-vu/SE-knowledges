@@ -7,9 +7,9 @@ layout: null
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blog CMS - Admin</title>
-    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
-    <link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="stylesheet" href="/assets/css/admin.css">
+    <link rel="icon" type="image/svg+xml" href="{{ '/assets/favicon.svg' | relative_url }}">
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+    <link rel="stylesheet" href="{{ '/assets/css/admin.css' | relative_url }}">
     <!-- Marked.js for Markdown Preview -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -117,6 +117,6 @@ layout: null
     <script>
         window.API_URL = "{{ site.view_api_url }}";
     </script>
-    <script src="/assets/js/admin.js"></script>
+    <script src="{{ '/assets/js/admin.js' | relative_url }}"></script>
 </body>
 </html>
