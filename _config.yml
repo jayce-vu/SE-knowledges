@@ -39,6 +39,9 @@ exclude:
   - .bundle
   - .jekyll-cache
   - _site
+  # Ensure admin.html and view.html are NOT excluded
+  # They are root files, so standard Jekyll should pick them up unless they start with _ or .
+
 
 # View Count API Configuration
 # Deploy the worker in /backend/worker.js to Cloudflare Workers and paste the URL here.
