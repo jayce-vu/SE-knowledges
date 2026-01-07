@@ -55,8 +55,8 @@ jobs:
           fi
           
           if [ -z "$PR_NUM" ]; then
-            echo "Could not find PR number, skipping build."
-            exit 0
+            echo "Could not find PR number, failing build."
+            exit 1
           fi
 
           BASE_PATH="${{ steps.pages.outputs.base_path }}/pr-preview/pr-$PR_NUM"
