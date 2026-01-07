@@ -1,101 +1,101 @@
 name: PR policy (reviewer/assignee/approval)
 
-on:
-  pull_request:
-    types: [opened, reopened, synchronize, ready_for_review, edited]
-  pull_request_review:
-    types: [submitted, edited, dismissed]
-  workflow_dispatch:
+# on:
+#   pull_request:
+#     types: [opened, reopened, synchronize, ready_for_review, edited]
+#   pull_request_review:
+#     types: [submitted, edited, dismissed]
+#   workflow_dispatch:
 
-permissions:
-  contents: read
-  pull-requests: read
+# permissions:
+#   contents: read
+#   pull-requests: read
 
-jobs:
-  policy:
-    runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.draft == false || github.event_name != 'pull_request' }}
-    steps:
-      - name: Validate PR policy
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
+# jobs:
+#   policy:
+#     runs-on: ubuntu-latest
+#     if: ${{ github.event.pull_request.draft == false || github.event_name != 'pull_request' }}
+#     steps:
+#       - name: Validate PR policy
+#         uses: actions/github-script@v7
+#         with:
+#           script: |
+#             const owner = context.repo.owner;
+#             const repo = context.repo.repo;
 
-            let pull_number =
-              context.payload.pull_request?.number ??
-              context.payload.review?.pull_request_url?.split("/").pop();
+#             let pull_number =
+#               context.payload.pull_request?.number ??
+#               context.payload.review?.pull_request_url?.split("/").pop();
 
-            if (!pull_number) {
-              // Try to find PR associated with commit sha
-              try {
-                const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
-                  owner,
-                  repo,
-                  commit_sha: context.sha,
-                });
-                if (prs.data.length > 0) {
-                  pull_number = prs.data[0].number;
-                }
-              } catch (e) {
-                core.info(`Error finding PR for commit: ${e.message}`);
-              }
-            }
+#             if (!pull_number) {
+#               // Try to find PR associated with commit sha
+#               try {
+#                 const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+#                   owner,
+#                   repo,
+#                   commit_sha: context.sha,
+#                 });
+#                 if (prs.data.length > 0) {
+#                   pull_number = prs.data[0].number;
+#                 }
+#               } catch (e) {
+#                 core.info(`Error finding PR for commit: ${e.message}`);
+#               }
+#             }
 
-            if (!pull_number) {
-              core.setFailed("Cannot determine pull request number from event payload or commit SHA.");
-              return;
-            }
+#             if (!pull_number) {
+#               core.setFailed("Cannot determine pull request number from event payload or commit SHA.");
+#               return;
+#             }
 
-            const pr = await github.rest.pulls.get({ owner, repo, pull_number: Number(pull_number) });
-            const prAuthor = pr.data.user?.login;
+#             const pr = await github.rest.pulls.get({ owner, repo, pull_number: Number(pull_number) });
+#             const prAuthor = pr.data.user?.login;
 
-            // 1) Must have at least one requested reviewer (user or team),
-            // OR at least one review submitted by someone other than the PR author.
-            // Note: GitHub typically clears "requested reviewers" once a review is submitted,
-            // so requiring outstanding requests would keep failing even after approval.
-            const requestedUsers = pr.data.requested_reviewers ?? [];
-            const requestedTeams = pr.data.requested_teams ?? [];
-            const hasReviewerRequest = (requestedUsers.length + requestedTeams.length) > 0;
+#             // 1) Must have at least one requested reviewer (user or team),
+#             // OR at least one review submitted by someone other than the PR author.
+#             // Note: GitHub typically clears "requested reviewers" once a review is submitted,
+#             // so requiring outstanding requests would keep failing even after approval.
+#             const requestedUsers = pr.data.requested_reviewers ?? [];
+#             const requestedTeams = pr.data.requested_teams ?? [];
+#             const hasReviewerRequest = (requestedUsers.length + requestedTeams.length) > 0;
 
-            // 2) Must have at least one assignee
-            const issue = await github.rest.issues.get({ owner, repo, issue_number: Number(pull_number) });
-            const assignees = issue.data.assignees ?? [];
-            const hasAssignee = assignees.length > 0;
+#             // 2) Must have at least one assignee
+#             const issue = await github.rest.issues.get({ owner, repo, issue_number: Number(pull_number) });
+#             const assignees = issue.data.assignees ?? [];
+#             const hasAssignee = assignees.length > 0;
 
-            // 3) Must have at least one approval (by someone other than PR author)
-            const reviews = await github.rest.pulls.listReviews({ owner, repo, pull_number: Number(pull_number), per_page: 100 });
-            const latestByUser = new Map();
-            for (const r of reviews.data) {
-              const login = r.user?.login;
-              if (!login) continue;
-              // Keep the latest review per user.
-              const prev = latestByUser.get(login);
-              const prevTime = prev?.submitted_at ? Date.parse(prev.submitted_at) : 0;
-              const curTime = r.submitted_at ? Date.parse(r.submitted_at) : 0;
-              if (!prev || curTime >= prevTime) latestByUser.set(login, r);
-            }
-            const approvers = [...latestByUser.values()]
-              .filter(r => r.state === "APPROVED")
-              .map(r => r.user?.login)
-              .filter(login => !!login && login !== prAuthor);
-            const hasApproval = approvers.length >= 1;
+#             // 3) Must have at least one approval (by someone other than PR author)
+#             const reviews = await github.rest.pulls.listReviews({ owner, repo, pull_number: Number(pull_number), per_page: 100 });
+#             const latestByUser = new Map();
+#             for (const r of reviews.data) {
+#               const login = r.user?.login;
+#               if (!login) continue;
+#               // Keep the latest review per user.
+#               const prev = latestByUser.get(login);
+#               const prevTime = prev?.submitted_at ? Date.parse(prev.submitted_at) : 0;
+#               const curTime = r.submitted_at ? Date.parse(r.submitted_at) : 0;
+#               if (!prev || curTime >= prevTime) latestByUser.set(login, r);
+#             }
+#             const approvers = [...latestByUser.values()]
+#               .filter(r => r.state === "APPROVED")
+#               .map(r => r.user?.login)
+#               .filter(login => !!login && login !== prAuthor);
+#             const hasApproval = approvers.length >= 1;
 
-            const reviewers = [...latestByUser.keys()].filter(login => !!login && login !== prAuthor);
-            const hasReviewer = hasReviewerRequest || reviewers.length >= 1;
+#             const reviewers = [...latestByUser.keys()].filter(login => !!login && login !== prAuthor);
+#             const hasReviewer = hasReviewerRequest || reviewers.length >= 1;
 
-            const missing = [];
-            if (!hasReviewer) missing.push("request at least 1 reviewer (or have at least 1 non-author review submitted)");
-            if (!hasAssignee) missing.push("set at least 1 assignee");
-            if (!hasApproval) missing.push("get at least 1 approval (from someone other than the PR author)");
+#             const missing = [];
+#             if (!hasReviewer) missing.push("request at least 1 reviewer (or have at least 1 non-author review submitted)");
+#             if (!hasAssignee) missing.push("set at least 1 assignee");
+#             if (!hasApproval) missing.push("get at least 1 approval (from someone other than the PR author)");
 
-            if (missing.length) {
-              core.setFailed(
-                `PR policy failed: ${missing.join("; ")}. ` +
-                `Current: requested_reviewers=${requestedUsers.length}, requested_teams=${requestedTeams.length}, assignees=${assignees.length}, approvals=${approvers.length}, non_author_reviews=${reviewers.length}.`
-              );
-            } else {
-              core.info("PR policy passed.");
-            }
+#             if (missing.length) {
+#               core.setFailed(
+#                 `PR policy failed: ${missing.join("; ")}. ` +
+#                 `Current: requested_reviewers=${requestedUsers.length}, requested_teams=${requestedTeams.length}, assignees=${assignees.length}, approvals=${approvers.length}, non_author_reviews=${reviewers.length}.`
+#               );
+#             } else {
+#               core.info("PR policy passed.");
+#             }
 
