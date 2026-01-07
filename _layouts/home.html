@@ -1,0 +1,38 @@
+---
+layout: default
+---
+
+<div class="panel">
+  <h1 style="margin-top: 0;">{{ page.title }}</h1>
+  {% if page.description %}
+    <p class="post-meta">{{ page.description }}</p>
+  {% endif %}
+  {{ content }}
+</div>
+
+<div style="height: 16px;"></div>
+
+<div class="panel">
+  {% assign items = page.collection_name | default: '' %}
+  {% if items == 'en_posts' %}
+    {% assign posts = site.en_posts | sort: 'date' | reverse %}
+  {% elsif items == 'vi_posts' %}
+    {% assign posts = site.vi_posts | sort: 'date' | reverse %}
+  {% else %}
+    {% assign posts = site.en_posts | sort: 'date' | reverse %}
+  {% endif %}
+
+  <h2 style="margin-top: 0;">Posts</h2>
+  <ul class="post-list">
+    {% for p in posts %}
+      <li>
+        <div class="post-meta">{{ p.date | date: "%Y-%m-%d" }} · <span class="pill">{{ p.lang }}</span></div>
+        <div><a href="{{ p.url | relative_url }}"><strong>{{ p.title }}</strong></a></div>
+        {% if p.summary %}
+          <div class="post-meta">{{ p.summary }}</div>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+
