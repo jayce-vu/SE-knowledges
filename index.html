@@ -4,6 +4,13 @@ layout: default
 
 <div id="home-app">
     <!-- Filters / Loading State -->
+    <div class="filters" style="margin-bottom: 20px; text-align: center;">
+        <select id="topic-filter" style="padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
+            <option value="">All Topics</option>
+            <!-- JS will populate -->
+        </select>
+    </div>
+
     <div id="loading-indicator" style="text-align: center; padding: 20px;">
         Loading articles...
     </div>
@@ -20,26 +27,55 @@ layout: default
     document.addEventListener("DOMContentLoaded", async () => {
         const listContainer = document.getElementById("article-list");
         const loading = document.getElementById("loading-indicator");
+        const topicFilter = document.getElementById("topic-filter");
         
-        try {
-            // Determine language based on URL or browser (Default 'vi')
-            // If URL contains /en/ -> lang=en
-            const isEn = window.location.pathname.includes("/en/");
-            const lang = isEn ? "en" : "vi";
+        // Initial Load
+        const isEn = window.location.pathname.includes("/en/");
+        const lang = isEn ? "en" : "vi";
 
-            const res = await fetch(`${API_URL}/api/articles?lang=${lang}`);
-            const posts = await res.json();
+        // Parallel Fetch: Articles & Topics
+        try {
+            const [postsRes, topicsRes] = await Promise.all([
+                fetch(`${API_URL}/api/articles?lang=${lang}`),
+                fetch(`${API_URL}/api/topics`)
+            ]);
+
+            const posts = await postsRes.json();
+            const topics = await topicsRes.json();
+
+            // Render Topics
+            topics.forEach(t => {
+                const opt = document.createElement("option");
+                opt.value = t.name; // Simple filter by name or ID
+                opt.textContent = t.name;
+                topicFilter.appendChild(opt);
+            });
+
+            // Filter Logic
+            topicFilter.addEventListener("change", () => {
+                const selected = topicFilter.value;
+                const filtered = selected 
+                    ? posts.filter(p => p.topic_name === selected)
+                    : posts;
+                renderPosts(filtered);
+            });
 
             loading.style.display = "none";
             listContainer.style.display = "block";
+            renderPosts(posts);
 
-            if (posts.length === 0) {
+        } catch (e) {
+            loading.innerText = "Error loading content. Please try again later.";
+            console.error(e);
+        }
+        
+        function renderPosts(data) {
+            if (data.length === 0) {
                 listContainer.innerHTML = "<p>No articles found.</p>";
                 return;
             }
 
-            // Render Posts
-            listContainer.innerHTML = posts.map(post => `
+            listContainer.innerHTML = data.map(post => `
                 <article class="post-preview">
                     <a href="/view?slug=${post.slug}">
                         <h2 class="post-title">${post.title}</h2>
@@ -52,10 +88,6 @@ layout: default
                 </article>
                 <hr>
             `).join("");
-
-        } catch (e) {
-            loading.innerText = "Error loading articles. Please try again later.";
-            console.error(e);
         }
     });
 </script>
