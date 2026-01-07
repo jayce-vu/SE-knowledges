@@ -123,3 +123,20 @@ jobs:
               core.info(`enable auto-merge skipped: ${e.message}`);
             }
 
+            // 6) Manually trigger other workflows (CI, Preview, Policy)
+            // This is needed because PRs created by GITHUB_TOKEN do not automatically trigger other workflows.
+            const workflows = ['ci.yml', 'preview.yml', 'pr-policy.yml'];
+            for (const wf of workflows) {
+              try {
+                await github.rest.actions.createWorkflowDispatch({
+                  owner,
+                  repo,
+                  workflow_id: wf,
+                  ref: head,
+                });
+                core.info(`Triggered workflow ${wf} for branch ${head}`);
+              } catch (e) {
+                core.info(`Failed to trigger workflow ${wf}: ${e.message}`);
+              }
+            }
+

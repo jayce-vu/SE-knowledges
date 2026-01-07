@@ -23,12 +23,28 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            const pull_number =
+            let pull_number =
               context.payload.pull_request?.number ??
               context.payload.review?.pull_request_url?.split("/").pop();
 
             if (!pull_number) {
-              core.setFailed("Cannot determine pull request number from event payload.");
+              // Try to find PR associated with commit sha
+              try {
+                const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                  owner,
+                  repo,
+                  commit_sha: context.sha,
+                });
+                if (prs.data.length > 0) {
+                  pull_number = prs.data[0].number;
+                }
+              } catch (e) {
+                core.info(`Error finding PR for commit: ${e.message}`);
+              }
+            }
+
+            if (!pull_number) {
+              core.setFailed("Cannot determine pull request number from event payload or commit SHA.");
               return;
             }
 
