@@ -1,6 +1,6 @@
 // Config - In real app, load this from env or config file
 // Ensure this matches your _config.yml or deployed worker URL
-const API_URL = "https://post-views.jayce-it-work.workers.dev"; // Fallback/Update this
+const API_URL = window.API_URL || "https://post-views.jayce-it-work.workers.dev"; 
 
 document.addEventListener("DOMContentLoaded", function() {
     initTabs();
