@@ -25,6 +25,7 @@ layout: default
     const API_URL = "{{ site.view_api_url }}"; // Use Jekyll config var
     
     document.addEventListener("DOMContentLoaded", async () => {
+        console.log("Home Page Loaded. API URL:", API_URL);
         const listContainer = document.getElementById("article-list");
         const loading = document.getElementById("loading-indicator");
         const topicFilter = document.getElementById("topic-filter");
@@ -32,16 +33,23 @@ layout: default
         // Initial Load
         const isEn = window.location.pathname.includes("/en/");
         const lang = isEn ? "en" : "vi";
+        console.log("Current Language:", lang);
 
         // Parallel Fetch: Articles & Topics
         try {
+            console.log("Fetching articles and topics...");
             const [postsRes, topicsRes] = await Promise.all([
                 fetch(`${API_URL}/api/articles?lang=${lang}`),
                 fetch(`${API_URL}/api/topics`)
             ]);
 
+            console.log("API Response Status:", postsRes.status, topicsRes.status);
+
             const posts = await postsRes.json();
             const topics = await topicsRes.json();
+            
+            console.log("Posts Data:", posts);
+            console.log("Topics Data:", topics);
 
             // Render Topics
             topics.forEach(t => {
