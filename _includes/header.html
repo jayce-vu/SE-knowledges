@@ -1,0 +1,21 @@
+<header class="site">
+  <div class="wrap nav">
+    <div class="brand">
+      <a class="title" href="{{ '/' | relative_url }}">{{ site.title }}</a>
+      <span class="subtitle">{{ site.description }}</span>
+    </div>
+    <div>
+      {% assign current_lang = page.lang | default: 'en' %}
+      {% if current_lang == 'vi' %}
+        <a class="button" href="{{ '/en/' | relative_url }}">English</a>
+        <a class="button" href="{{ '/vi/' | relative_url }}">Tiếng Việt</a>
+      {% else %}
+        <a class="button" href="{{ '/en/' | relative_url }}">English</a>
+        <a class="button" href="{{ '/vi/' | relative_url }}">Tiếng Việt</a>
+      {% endif %}
+      <a class="button" href="{{ '/en/about/' | relative_url }}">About</a>
+      <a class="button" href="{{ '/vi/about/' | relative_url }}">Giới thiệu</a>
+    </div>
+  </div>
+</header>
+

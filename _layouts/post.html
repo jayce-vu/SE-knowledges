@@ -1,0 +1,49 @@
+---
+layout: default
+---
+
+<article class="panel">
+  <div class="post-meta">
+    {{ page.date | date: "%Y-%m-%d" }}
+    {% if page.tags %}
+      ·
+      {% for t in page.tags %}
+        <span class="pill">{{ t }}</span>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <h1 style="margin-top: 6px;">{{ page.title }}</h1>
+  {% if page.summary %}
+    <p class="post-meta">{{ page.summary }}</p>
+  {% endif %}
+
+  {% if page.pair_id %}
+    {% if page.lang == 'en' %}
+      {% assign other = site.vi_posts | where: "pair_id", page.pair_id | first %}
+      {% if other %}
+        <p class="post-meta">Also available in Vietnamese: <a href="{{ other.url | relative_url }}">{{ other.title }}</a></p>
+      {% endif %}
+    {% elsif page.lang == 'vi' %}
+      {% assign other = site.en_posts | where: "pair_id", page.pair_id | first %}
+      {% if other %}
+        <p class="post-meta">Cũng có bản tiếng Anh: <a href="{{ other.url | relative_url }}">{{ other.title }}</a></p>
+      {% endif %}
+    {% endif %}
+  {% endif %}
+
+  <div>
+    {{ content }}
+  </div>
+</article>
+
+<div style="height: 16px;"></div>
+
+<div class="panel">
+  {% if page.lang == 'vi' %}
+    <a href="{{ '/vi/' | relative_url }}">← Quay lại danh sách</a>
+  {% else %}
+    <a href="{{ '/en/' | relative_url }}">← Back to list</a>
+  {% endif %}
+</div>
+

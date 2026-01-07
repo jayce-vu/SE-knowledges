@@ -1,0 +1,47 @@
+title: SE-knowledges
+description: Technical notes and articles in Vietnamese and English.
+url: "" # GitHub Pages will set the real URL
+baseurl: "" # For project pages, set to "/<repo>"
+
+markdown: kramdown
+kramdown:
+  input: GFM
+
+permalink: pretty
+timezone: UTC
+
+collections:
+  en_posts:
+    output: true
+    permalink: /en/:path/
+  vi_posts:
+    output: true
+    permalink: /vi/:path/
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+  - scope:
+      type: en_posts
+    values:
+      layout: post
+      lang: en
+  - scope:
+      type: vi_posts
+    values:
+      layout: post
+      lang: vi
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - CONTRIBUTING.md
+  - templates
+  - vendor
+  - .bundle
+  - .jekyll-cache
+  - _site
+
