@@ -1,0 +1,61 @@
+---
+layout: default
+---
+
+<div id="home-app">
+    <!-- Filters / Loading State -->
+    <div id="loading-indicator" style="text-align: center; padding: 20px;">
+        Loading articles...
+    </div>
+
+    <!-- Article List Container -->
+    <div id="article-list" class="posts-list" style="display: none;">
+        <!-- JS will populate this -->
+    </div>
+</div>
+
+<script>
+    const API_URL = "{{ site.view_api_url }}"; // Use Jekyll config var
+    
+    document.addEventListener("DOMContentLoaded", async () => {
+        const listContainer = document.getElementById("article-list");
+        const loading = document.getElementById("loading-indicator");
+        
+        try {
+            // Determine language based on URL or browser (Default 'vi')
+            // If URL contains /en/ -> lang=en
+            const isEn = window.location.pathname.includes("/en/");
+            const lang = isEn ? "en" : "vi";
+
+            const res = await fetch(`${API_URL}/api/articles?lang=${lang}`);
+            const posts = await res.json();
+
+            loading.style.display = "none";
+            listContainer.style.display = "block";
+
+            if (posts.length === 0) {
+                listContainer.innerHTML = "<p>No articles found.</p>";
+                return;
+            }
+
+            // Render Posts
+            listContainer.innerHTML = posts.map(post => `
+                <article class="post-preview">
+                    <a href="/view?slug=${post.slug}">
+                        <h2 class="post-title">${post.title}</h2>
+                        ${post.excerpt ? `<h3 class="post-subtitle">${post.excerpt}</h3>` : ''}
+                    </a>
+                    <p class="post-meta">
+                        Posted by Author on ${new Date(post.created_at * 1000).toLocaleDateString()}
+                        ${post.topic_name ? ` · <span class="topic-tag">${post.topic_name}</span>` : ''}
+                    </p>
+                </article>
+                <hr>
+            `).join("");
+
+        } catch (e) {
+            loading.innerText = "Error loading articles. Please try again later.";
+            console.error(e);
+        }
+    });
+</script>

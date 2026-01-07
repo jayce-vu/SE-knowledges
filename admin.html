@@ -1,0 +1,118 @@
+---
+layout: null
+---
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog CMS - Admin</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/admin.css">
+    <!-- Marked.js for Markdown Preview -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1>Blog Content Management</h1>
+            <div class="actions">
+                <button id="btn-save" class="btn-primary">Lưu bài viết</button>
+            </div>
+        </header>
+
+        <div class="admin-layout">
+            <!-- Sidebar: List posts -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h3>Bài viết</h3>
+                    <button id="btn-new" class="btn-sm">+ Mới</button>
+                </div>
+                <ul id="post-list" class="post-list">
+                    <!-- JS will load posts here -->
+                    <li class="loading">Đang tải...</li>
+                </ul>
+            </aside>
+
+            <!-- Main Editor -->
+            <main class="editor-area">
+                <form id="post-form">
+                    <input type="hidden" id="post-id">
+                    
+                    <!-- Common Metadata -->
+                    <div class="meta-section">
+                        <div class="form-group">
+                            <label>Chủ đề (Topic)</label>
+                            <select id="topic-select">
+                                <option value="">Loading...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Ảnh bìa (URL)</label>
+                            <input type="text" id="thumbnail-url" placeholder="https://...">
+                        </div>
+                        <div class="form-group checkbox">
+                            <input type="checkbox" id="is-published">
+                            <label for="is-published">Công khai (Publish)</label>
+                        </div>
+                        <div class="form-group">
+                            <label>Tags (Comma separated)</label>
+                            <input type="text" id="post-tags" placeholder="tech, cloudflare, guide">
+                        </div>
+                    </div>
+
+                    <!-- Language Tabs -->
+                    <div class="tabs-container">
+                        <div class="tabs-header">
+                            <button type="button" class="tab-btn active" data-lang="vi">Tiếng Việt (VI)</button>
+                            <button type="button" class="tab-btn" data-lang="en">English (EN)</button>
+                        </div>
+
+                        <!-- Vietnamese Content -->
+                        <div class="tab-content active" data-lang="vi">
+                            <div class="form-group">
+                                <label>Tiêu đề (VI)</label>
+                                <input type="text" id="title-vi" class="title-input" placeholder="Nhập tiêu đề tiếng Việt">
+                            </div>
+                            <div class="form-group">
+                                <label>Slug (VI)</label>
+                                <input type="text" id="slug-vi" class="slug-input" placeholder="tieu-de-tieng-viet">
+                            </div>
+                            <div class="form-group">
+                                <label>Mô tả ngắn (Excerpt)</label>
+                                <textarea id="excerpt-vi" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Nội dung (Markdown)</label>
+                                <textarea id="content-vi" class="markdown-editor" rows="15"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- English Content -->
+                        <div class="tab-content" data-lang="en">
+                            <div class="form-group">
+                                <label>Title (EN)</label>
+                                <input type="text" id="title-en" class="title-input" placeholder="Enter English Title">
+                            </div>
+                            <div class="form-group">
+                                <label>Slug (EN)</label>
+                                <input type="text" id="slug-en" class="slug-input" placeholder="english-title-slug">
+                            </div>
+                            <div class="form-group">
+                                <label>Excerpt</label>
+                                <textarea id="excerpt-en" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Content (Markdown)</label>
+                                <textarea id="content-en" class="markdown-editor" rows="15"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <script src="/assets/js/admin.js"></script>
+</body>
+</html>
