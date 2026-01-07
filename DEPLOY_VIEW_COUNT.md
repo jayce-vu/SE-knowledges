@@ -1,40 +1,45 @@
-# Hướng dẫn Deploy Tính Năng Đếm Lượt View
+# Hướng dẫn Deploy Tính Năng Đếm Lượt View với Cloudflare D1
 
-Tính năng này sử dụng **Cloudflare Workers** (miễn phí) để xử lý logic đếm và **Cloudflare KV** để lưu trữ dữ liệu.
+Tính năng này sử dụng **Cloudflare Workers** (miễn phí) để xử lý logic đếm và **Cloudflare D1** (SQL Database) để lưu trữ dữ liệu bền vững.
 
 ## Bước 1: Tạo Cloudflare Worker
 
 1. Đăng nhập vào [Cloudflare Dashboard](https://dash.cloudflare.com/).
 2. Vào mục **Workers & Pages**.
 3. Nhấn **Create Application** -> **Create Worker**.
-4. Đặt tên cho worker (ví dụ: `blog-views`).
+4. Đặt tên cho worker (ví dụ: `blog-views-d1`).
 5. Nhấn **Deploy** (đừng lo về code mặc định, ta sẽ sửa sau).
 
-## Bước 2: Tạo KV Namespace (Cơ sở dữ liệu)
+## Bước 2: Tạo D1 Database
 
-1. Trong dashboard của Worker vừa tạo, vào tab **Settings**.
-2. Chọn **Variables** (hoặc **KV Namespaces** ở menu trái của trang Workers chính).
-3. Tạo một KV Namespace mới, đặt tên là `VIEWS_DB`.
-4. Quay lại trang **Settings** -> **Variables** của Worker `blog-views`.
-5. Tại mục **KV Namespace Bindings**, nhấn **Add binding**:
-   - **Variable name**: `VIEWS` (Bắt buộc phải là tên này vì code dùng biến này).
-   - **KV Namespace**: Chọn `VIEWS_DB` vừa tạo.
-6. Nhấn **Save and Deploy**.
+1. Trong dashboard Workers & Pages, chọn **D1** ở menu trái.
+2. Nhấn **Create Database**.
+3. Chọn **Dashboard** -> Đặt tên `blog-views-db` -> **Create**.
+4. Vào tab **Console** của database vừa tạo, copy nội dung file `backend/schema.sql` và dán vào, sau đó nhấn **Execute** để tạo bảng.
 
-## Bước 3: Cập nhật Code Worker
+## Bước 3: Liên kết D1 với Worker
+
+1. Quay lại Worker `blog-views-d1` đã tạo ở Bước 1.
+2. Vào **Settings** -> **Variables**.
+3. Tại mục **D1 Database Bindings**, nhấn **Add binding**:
+   - **Variable name**: `DB` (Bắt buộc phải là tên này).
+   - **D1 Database**: Chọn `blog-views-db` vừa tạo.
+4. Nhấn **Save and Deploy**.
+
+## Bước 4: Cập nhật Code Worker
 
 1. Vào tab **Overview** của Worker, nhấn **Quick Edit**.
 2. Xóa hết code cũ, copy toàn bộ nội dung từ file `backend/worker.js` trong project này dán vào.
 3. Nhấn **Save and Deploy**.
 
-## Bước 4: Cấu hình Blog
+## Bước 5: Cấu hình Blog
 
-1. Copy đường dẫn Worker của bạn (dạng `https://blog-views.username.workers.dev`).
+1. Copy đường dẫn Worker của bạn (dạng `https://blog-views-d1.username.workers.dev`).
 2. Mở file `_config.yml` trong source code blog.
 3. Tìm dòng `view_api_url` và dán đường dẫn vào:
 
 ```yaml
-view_api_url: "https://blog-views.username.workers.dev"
+view_api_url: "https://blog-views-d1.username.workers.dev"
 ```
 
 4. Commit và Push code lên GitHub.
