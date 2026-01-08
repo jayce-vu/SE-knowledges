@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>
+      Frontend Architecture Review · SE-knowledges
+    </title>
+    
+    <!-- Default Meta Tags -->
+    <meta name="description" content="Technical notes and articles in Vietnamese and English." />
+    
+    <!-- Open Graph / Facebook / LinkedIn / WhatsApp / Telegram / Discord / Slack -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="/SE-knowledges/pr-preview/pr-14/FRONTEND_ARCHITECTURE_REVIEW/" />
+    <meta property="og:title" content="Frontend Architecture Review" />
+    <meta property="og:description" content="Technical notes and articles in Vietnamese and English." />
+    <meta property="og:site_name" content="SE-knowledges" />
+    <meta property="og:locale" content="en_US" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="/SE-knowledges/pr-preview/pr-14/FRONTEND_ARCHITECTURE_REVIEW/" />
+    <meta name="twitter:title" content="Frontend Architecture Review" />
+    <meta name="twitter:description" content="Technical notes and articles in Vietnamese and English." />
+    
+    <!-- Additional Meta Tags for Better Compatibility -->
+    <meta name="theme-color" content="#0b1020" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    
+    <link rel="icon" type="image/svg+xml" href="/SE-knowledges/pr-preview/pr-14/assets/favicon.svg">
+    <link rel="stylesheet" href="/SE-knowledges/pr-preview/pr-14/assets/css/style.css" />
+    
+  </head>
+  <body>
+    <header class="site">
+  <div class="wrap nav">
+    <div class="brand">
+      <a class="title" href="/SE-knowledges/pr-preview/pr-14/">SE-knowledges</a>
+      <span class="subtitle">Technical notes and articles in Vietnamese and English.</span>
+    </div>
+    <div>
+      
+      
+      
+      
+
+      
+
+      
+        <a class="button" href="/SE-knowledges/pr-preview/pr-14/en/">English</a>
+        <a class="button" href="/SE-knowledges/pr-preview/pr-14/vi/">Tiếng Việt</a>
+      
+      
+      <!-- Auth Button (Hidden by default, JS toggles) -->
+      <a class="button" id="auth-btn" href="/SE-knowledges/pr-preview/pr-14/login/" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
+      <!-- New Post Button (Only visible when logged in) -->
+      <a class="button" id="new-post-btn" href="/SE-knowledges/pr-preview/pr-14/admin/" style="margin-left: 10px; border: 1px solid #7ee787; background: rgba(126, 231, 135, 0.1); display: none;">+ New Post</a>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem("token");
+      const authBtn = document.getElementById("auth-btn");
+      const newPostBtn = document.getElementById("new-post-btn");
+      
+      if (token) {
+        // User is logged in
+        authBtn.textContent = "Admin";
+        authBtn.href = "/SE-knowledges/pr-preview/pr-14/admin/";
+        newPostBtn.style.display = "inline-block";
+      } else {
+        // User is not logged in
+        newPostBtn.style.display = "none";
+      }
+    });
+  </script>
+</header>
+
+    <main class="wrap">
+      <h1 id="frontend-architecture-review">Frontend Architecture Review</h1>
+
+<p><strong>Ngày review:</strong> $(date)
+<strong>Status:</strong> ⚠️ Cần cải thiện một số điểm</p>
+
+<hr />
+
+<h2 id="-tổng-quan-kiến-trúc">📊 Tổng Quan Kiến Trúc</h2>
+
+<h3 id="hiện-tại">Hiện Tại</h3>
+<ul>
+  <li><strong>Framework:</strong> Jekyll (Static Site Generator)</li>
+  <li><strong>Hosting:</strong> GitHub Pages</li>
+  <li><strong>Backend API:</strong> Cloudflare Workers (D1 Database)</li>
+  <li><strong>Architecture:</strong> Hybrid (Static + Dynamic API calls)</li>
+  <li><strong>Language:</strong> Vanilla JavaScript (no framework)</li>
+</ul>
+
+<h3 id="cấu-trúc-thư-mục">Cấu Trúc Thư Mục</h3>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/
+├── _layouts/          # Jekyll layouts
+│   ├── default.html
+│   ├── post.html
+│   └── home.html
+├── _includes/         # Reusable components
+│   ├── header.html
+│   └── footer.html
+├── assets/
+│   ├── css/
+│   │   ├── style.css
+│   │   └── admin.css
+│   └── js/
+│       ├── view-count.js
+│       └── admin.js
+├── admin.html         # Admin panel
+├── login.html         # Auth page
+├── view.html          # Article viewer
+└── index.html         # Home page
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="-điểm-tốt">✅ Điểm Tốt</h2>
+
+<h3 id="1-separation-of-concerns">1. <strong>Separation of Concerns</strong></h3>
+<ul>
+  <li>✅ Layouts và includes được tách riêng</li>
+  <li>✅ CSS và JS được tổ chức trong <code class="language-plaintext highlighter-rouge">assets/</code></li>
+  <li>✅ Admin và public pages tách biệt</li>
+</ul>
+
+<h3 id="2-jekyll-integration">2. <strong>Jekyll Integration</strong></h3>
+<ul>
+  <li>✅ Sử dụng Jekyll variables (<code class="language-plaintext highlighter-rouge">site.view_api_url</code>)</li>
+  <li>✅ Liquid templating cho static content</li>
+  <li>✅ Bilingual support với collections</li>
+</ul>
+
+<h3 id="3-api-integration">3. <strong>API Integration</strong></h3>
+<ul>
+  <li>✅ Fetch API được sử dụng đúng cách</li>
+  <li>✅ CORS được handle</li>
+  <li>✅ Error handling cơ bản</li>
+</ul>
+
+<h3 id="4-features">4. <strong>Features</strong></h3>
+<ul>
+  <li>✅ View count integration</li>
+  <li>✅ Comments system</li>
+  <li>✅ Admin panel với CRUD</li>
+  <li>✅ Bilingual support</li>
+</ul>
+
+<hr />
+
+<h2 id="️-vấn-đề-cần-sửa">⚠️ Vấn Đề Cần Sửa</h2>
+
+<h3 id="-critical-issues">🔴 Critical Issues</h3>
+
+<h4 id="1-api-response-format-mismatch">1. <strong>API Response Format Mismatch</strong></h4>
+<p><strong>File:</strong> <code class="language-plaintext highlighter-rouge">index.html</code>, <code class="language-plaintext highlighter-rouge">admin.js</code></p>
+
+<p><strong>Vấn đề:</strong></p>
+<ul>
+  <li>API trả về <code class="language-plaintext highlighter-rouge">{ data: [...], pagination: {...} }</code></li>
+  <li>Frontend expect <code class="language-plaintext highlighter-rouge">Array</code> trực tiếp</li>
+</ul>
+
+<p><strong>Code hiện tại:</strong></p>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">posts</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">postsRes</span><span class="p">.</span><span class="nx">json</span><span class="p">();</span>
+<span class="nx">posts</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">p</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="p">...</span> <span class="p">});</span> <span class="c1">// ❌ posts is object, not array</span>
+</code></pre></div></div>
+
+<p><strong>Nên sửa:</strong></p>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">response</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">postsRes</span><span class="p">.</span><span class="nx">json</span><span class="p">();</span>
+<span class="kd">const</span> <span class="nx">posts</span> <span class="o">=</span> <span class="nx">response</span><span class="p">.</span><span class="nx">data</span> <span class="o">||</span> <span class="nx">response</span><span class="p">;</span> <span class="c1">// Handle both formats</span>
+<span class="kd">const</span> <span class="nx">pagination</span> <span class="o">=</span> <span class="nx">response</span><span class="p">.</span><span class="nx">pagination</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p><strong>Impact:</strong> High - Home page và admin list sẽ crash</p>
+
+<hr />
+
+<h4 id="2-xss-vulnerability-trong-comments">2. <strong>XSS Vulnerability trong Comments</strong></h4>
+<p><strong>File:</strong> <code class="language-plaintext highlighter-rouge">view.html</code> (line 136)</p>
+
+<p><strong>Vấn đề:</strong></p>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">$</span><span class="p">{</span><span class="nx">c</span><span class="p">.</span><span class="nx">content</span><span class="p">}</span>  <span class="c1">// ❌ Direct HTML injection</span>
+</code></pre></div></div>
+
+<p><strong>Nên sửa:</strong></p>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">$</span><span class="p">{</span><span class="nx">escapeHtml</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">content</span><span class="p">)}</span>  <span class="c1">// Sanitize HTML</span>
+
+<span class="kd">function</span> <span class="nx">escapeHtml</span><span class="p">(</span><span class="nx">text</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">div</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">);</span>
+  <span class="nx">div</span><span class="p">.</span><span class="nx">textContent</span> <span class="o">=</span> <span class="nx">text</span><span class="p">;</span>
+  <span class="k">return</span> <span class="nx">div</span><span class="p">.</span><span class="nx">innerHTML</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>Impact:</strong> High - Security risk</p>
+
+<hr />
+
+<h4 id="3-view-count-key-mismatch">3. <strong>View Count Key Mismatch</strong></h4>
+<p><strong>File:</strong> <code class="language-plaintext highlighter-rouge">view-count.js</code>, <code class="language-plaintext highlighter-rouge">post.html</code></p>
+
+<p><strong>Vấn đề:</strong></p>
+<ul>
+  <li>Frontend dùng <code class="language-plaintext highlighter-rouge">pair_id</code> từ meta tag</li>
+  <li>API expect <code class="language-plaintext highlighter-rouge">slug</code> trong query parameter</li>
+  <li>Không match với nhau</li>
+</ul>
+
+<p><strong>Code hiện tại:</strong></p>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// view-count.js</span>
+<span class="kd">const</span> <span class="nx">pairId</span> <span class="o">=</span> <span class="nx">metaPairId</span><span class="p">.</span><span class="nx">getAttribute</span><span class="p">(</span><span class="dl">'</span><span class="s1">content</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">fetch</span><span class="p">(</span><span class="s2">`</span><span class="p">${</span><span class="nx">apiUrl</span><span class="p">}</span><span class="s2">/increment?key=</span><span class="p">${</span><span class="nx">pairId</span><span class="p">}</span><span class="s2">`</span><span class="p">);</span>  <span class="c1">// ❌ pair_id ≠ slug</span>
+</code></pre></div></div>
+
+<p><strong>Nên sửa:</strong></p>
+<ul>
+  <li>Option 1: Dùng slug thay vì pair_id</li>
+  <li>Option 2: API accept cả pair_id và slug</li>
+  <li>Option 3: Resolve pair_id → slug trước khi call API</li>
+</ul>
+
+<p><strong>Impact:</strong> High - View count không hoạt động</p>
+
+<hr />
+
+<h4 id="4-hardcoded-author-id">4. <strong>Hardcoded Author ID</strong></h4>
+<p><strong>File:</strong> <code class="language-plaintext highlighter-rouge">admin.js</code> (line 180)</p>
+
+<p><strong>Vấn đề:</strong></p>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">author_id</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="c1">// Hardcoded for now</span>
+</code></pre></div></div>
+
+<p><strong>Nên sửa:</strong></p>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Get from logged in user</span>
+<span class="kd">const</span> <span class="nx">user</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">localStorage</span><span class="p">.</span><span class="nx">getItem</span><span class="p">(</span><span class="dl">"</span><span class="s2">user</span><span class="dl">"</span><span class="p">));</span>
+<span class="nl">author_id</span><span class="p">:</span> <span class="nx">user</span><span class="p">?.</span><span class="nx">id</span> <span class="o">||</span> <span class="kc">null</span><span class="p">,</span>
+</code></pre></div></div>
+
+<p><strong>Impact:</strong> Medium - Tất cả bài viết có cùng author</p>
+
+<hr />
+
+<h3 id="-important-issues">🟡 Important Issues</h3>
+
+<h4 id="5-inline-scripts">5. <strong>Inline Scripts</strong></h4>
+<p><strong>Vấn đề:</strong></p>
+<ul>
+  <li>Scripts được viết trực tiếp trong HTML files</li>
+  <li>Khó maintain và test</li>
+  <li>Không có module bundling</li>
+</ul>
+
+<p><strong>Files:</strong></p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">index.html</code> - inline script</li>
+  <li><code class="language-plaintext highlighter-rouge">view.html</code> - inline script</li>
+  <li><code class="language-plaintext highlighter-rouge">login.html</code> - inline script</li>
+</ul>
+
+<p><strong>Nên tách ra:</strong></p>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// assets/js/home.js</span>
+<span class="c1">// assets/js/article-viewer.js</span>
+<span class="c1">// assets/js/auth.js</span>
+</code></pre></div></div>
+
+<hr />
+
+<h4 id="6-api-url-configuration">6. <strong>API URL Configuration</strong></h4>
+<p><strong>Vấn đề:</strong></p>
+<ul>
+  <li>API URL được set ở nhiều nơi</li>
+  <li>Hardcoded trong một số files</li>
+  <li>Không nhất quán</li>
+</ul>
+
+<p><strong>Files:</strong></p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">admin.js</code>: <code class="language-plaintext highlighter-rouge">const API_URL = window.API_URL || "https://post-views..."</code></li>
+  <li><code class="language-plaintext highlighter-rouge">view-count.js</code>: <code class="language-plaintext highlighter-rouge">let apiUrl = window.VIEW_API_URL;</code></li>
+  <li><code class="language-plaintext highlighter-rouge">index.html</code>: <code class="language-plaintext highlighter-rouge">const API_URL = "https://se-knowledges.jayce-it-work.workers.dev";</code></li>
+</ul>
+
+<p><strong>Nên:</strong></p>
+<ul>
+  <li>Tạo một config file chung</li>
+  <li>Hoặc dùng Jekyll config nhất quán</li>
+</ul>
+
+<hr />
+
+<h4 id="7-error-handling-không-nhất-quán">7. <strong>Error Handling Không Nhất Quán</strong></h4>
+<p><strong>Vấn đề:</strong></p>
+<ul>
+  <li>Một số nơi dùng <code class="language-plaintext highlighter-rouge">alert()</code></li>
+  <li>Một số nơi dùng <code class="language-plaintext highlighter-rouge">console.error()</code></li>
+  <li>Không có user-friendly error messages</li>
+</ul>
+
+<p><strong>Nên:</strong></p>
+<ul>
+  <li>Tạo error handler chung</li>
+  <li>Hiển thị errors trong UI thay vì alert</li>
+</ul>
+
+<hr />
+
+<h4 id="8-loading-states">8. <strong>Loading States</strong></h4>
+<p><strong>Vấn đề:</strong></p>
+<ul>
+  <li>Loading states không nhất quán</li>
+  <li>Một số pages không có loading indicator</li>
+  <li>Không có skeleton screens</li>
+</ul>
+
+<p><strong>Nên:</strong></p>
+<ul>
+  <li>Tạo loading component</li>
+  <li>Skeleton screens cho better UX</li>
+</ul>
+
+<hr />
+
+<h4 id="9-pagination-không-được-sử-dụng">9. <strong>Pagination Không Được Sử Dụng</strong></h4>
+<p><strong>Vấn đề:</strong></p>
+<ul>
+  <li>API có pagination nhưng frontend không dùng</li>
+  <li>Load tất cả articles một lúc</li>
+  <li>Performance issues với nhiều articles</li>
+</ul>
+
+<p><strong>Nên:</strong></p>
+<ul>
+  <li>Implement pagination UI</li>
+  <li>Load more / infinite scroll</li>
+</ul>
+
+<hr />
+
+<h4 id="10-không-có-routing-system">10. <strong>Không Có Routing System</strong></h4>
+<p><strong>Vấn đề:</strong></p>
+<ul>
+  <li>Dùng query parameters (<code class="language-plaintext highlighter-rouge">?slug=xxx</code>)</li>
+  <li>Không có proper routing</li>
+  <li>URL không clean</li>
+</ul>
+
+<p><strong>Nên:</strong></p>
+<ul>
+  <li>Implement client-side routing</li>
+  <li>Hoặc dùng Jekyll routing với proper permalinks</li>
+</ul>
+
+<hr />
+
+<h3 id="-nice-to-have">🟢 Nice to Have</h3>
+
+<h4 id="11-state-management">11. <strong>State Management</strong></h4>
+<ul>
+  <li>Không có state management</li>
+  <li>Data được fetch lại mỗi lần</li>
+  <li>Không có caching</li>
+</ul>
+
+<p><strong>Nên:</strong></p>
+<ul>
+  <li>Implement simple state management</li>
+  <li>Cache API responses</li>
+  <li>Use localStorage for offline support</li>
+</ul>
+
+<hr />
+
+<h4 id="12-component-structure">12. <strong>Component Structure</strong></h4>
+<ul>
+  <li>Không có component system</li>
+  <li>Code duplication</li>
+  <li>Khó reuse</li>
+</ul>
+
+<p><strong>Nên:</strong></p>
+<ul>
+  <li>Tạo reusable components</li>
+  <li>Hoặc migrate sang framework (React/Vue)</li>
+</ul>
+
+<hr />
+
+<h4 id="13-typescript--type-safety">13. <strong>TypeScript / Type Safety</strong></h4>
+<ul>
+  <li>Không có type checking</li>
+  <li>Dễ có bugs runtime</li>
+</ul>
+
+<p><strong>Nên:</strong></p>
+<ul>
+  <li>Thêm JSDoc comments</li>
+  <li>Hoặc migrate sang TypeScript</li>
+</ul>
+
+<hr />
+
+<h2 id="-checklist-cải-thiện">📋 Checklist Cải Thiện</h2>
+
+<h3 id="priority-1-critical">Priority 1 (Critical)</h3>
+<ul class="task-list">
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Fix API response format mismatch</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Fix XSS vulnerability trong comments</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Fix view count key mismatch (pair_id vs slug)</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Fix hardcoded author_id</li>
+</ul>
+
+<h3 id="priority-2-important">Priority 2 (Important)</h3>
+<ul class="task-list">
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Tách inline scripts ra files riêng</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Standardize API URL configuration</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Improve error handling</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Add consistent loading states</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Implement pagination</li>
+</ul>
+
+<h3 id="priority-3-nice-to-have">Priority 3 (Nice to Have)</h3>
+<ul class="task-list">
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Add routing system</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Implement state management</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Create component structure</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Add TypeScript/JSDoc</li>
+</ul>
+
+<hr />
+
+<h2 id="-recommendations">🎯 Recommendations</h2>
+
+<h3 id="short-term-1-2-weeks">Short Term (1-2 weeks)</h3>
+<ol>
+  <li><strong>Fix Critical Issues:</strong>
+    <ul>
+      <li>API response format</li>
+      <li>XSS vulnerability</li>
+      <li>View count key mismatch</li>
+      <li>Author ID</li>
+    </ul>
+  </li>
+  <li><strong>Refactor Code:</strong>
+    <ul>
+      <li>Tách inline scripts</li>
+      <li>Standardize config</li>
+      <li>Improve error handling</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="medium-term-1-2-months">Medium Term (1-2 months)</h3>
+<ol>
+  <li><strong>Improve Architecture:</strong>
+    <ul>
+      <li>Add routing</li>
+      <li>Implement pagination</li>
+      <li>Better state management</li>
+    </ul>
+  </li>
+  <li><strong>Enhance UX:</strong>
+    <ul>
+      <li>Loading states</li>
+      <li>Error messages</li>
+      <li>Skeleton screens</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="long-term-3-months">Long Term (3+ months)</h3>
+<ol>
+  <li><strong>Consider Migration:</strong>
+    <ul>
+      <li>Evaluate React/Vue migration</li>
+      <li>Or improve Jekyll + Vanilla JS</li>
+      <li>Add build tools (Webpack/Vite)</li>
+    </ul>
+  </li>
+  <li><strong>Add Features:</strong>
+    <ul>
+      <li>Offline support</li>
+      <li>PWA capabilities</li>
+      <li>Better admin UX</li>
+    </ul>
+  </li>
+</ol>
+
+<hr />
+
+<h2 id="-quick-fixes">🔧 Quick Fixes</h2>
+
+<h3 id="fix-1-api-response-format">Fix 1: API Response Format</h3>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// assets/js/api-helper.js</span>
+<span class="k">async</span> <span class="kd">function</span> <span class="nx">fetchArticles</span><span class="p">(</span><span class="nx">lang</span><span class="p">,</span> <span class="nx">limit</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="nx">offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">res</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">fetch</span><span class="p">(</span><span class="s2">`</span><span class="p">${</span><span class="nx">API_URL</span><span class="p">}</span><span class="s2">/api/articles?lang=</span><span class="p">${</span><span class="nx">lang</span><span class="p">}</span><span class="s2">&amp;limit=</span><span class="p">${</span><span class="nx">limit</span><span class="p">}</span><span class="s2">&amp;offset=</span><span class="p">${</span><span class="nx">offset</span><span class="p">}</span><span class="s2">`</span><span class="p">);</span>
+  <span class="kd">const</span> <span class="nx">data</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">();</span>
+  
+  <span class="c1">// Handle both old and new format</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">{</span> <span class="na">articles</span><span class="p">:</span> <span class="nx">data</span><span class="p">.</span><span class="nx">data</span><span class="p">,</span> <span class="na">pagination</span><span class="p">:</span> <span class="nx">data</span><span class="p">.</span><span class="nx">pagination</span> <span class="p">};</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="p">{</span> <span class="na">articles</span><span class="p">:</span> <span class="nx">data</span><span class="p">,</span> <span class="na">pagination</span><span class="p">:</span> <span class="kc">null</span> <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="fix-2-xss-protection">Fix 2: XSS Protection</h3>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// assets/js/utils.js</span>
+<span class="kd">function</span> <span class="nx">escapeHtml</span><span class="p">(</span><span class="nx">text</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">div</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="dl">'</span><span class="s1">div</span><span class="dl">'</span><span class="p">);</span>
+  <span class="nx">div</span><span class="p">.</span><span class="nx">textContent</span> <span class="o">=</span> <span class="nx">text</span><span class="p">;</span>
+  <span class="k">return</span> <span class="nx">div</span><span class="p">.</span><span class="nx">innerHTML</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">renderComment</span><span class="p">(</span><span class="nx">comment</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="s2">`
+    &lt;div class="comment"&gt;
+      &lt;strong&gt;</span><span class="p">${</span><span class="nx">escapeHtml</span><span class="p">(</span><span class="nx">comment</span><span class="p">.</span><span class="nx">guest_name</span><span class="p">)}</span><span class="s2">&lt;/strong&gt;
+      &lt;p&gt;</span><span class="p">${</span><span class="nx">escapeHtml</span><span class="p">(</span><span class="nx">comment</span><span class="p">.</span><span class="nx">content</span><span class="p">)}</span><span class="s2">&lt;/p&gt;
+    &lt;/div&gt;
+  `</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="fix-3-view-count-fix">Fix 3: View Count Fix</h3>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Option: Use slug instead of pair_id</span>
+<span class="c1">// In post.html, add slug to meta tag</span>
+<span class="o">&lt;</span><span class="nx">meta</span> <span class="nx">name</span><span class="o">=</span><span class="dl">"</span><span class="s2">article-slug</span><span class="dl">"</span> <span class="nx">content</span><span class="o">=</span><span class="dl">""</span><span class="o">&gt;</span>
+
+<span class="c1">// In view-count.js</span>
+<span class="kd">const</span> <span class="nx">slug</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="dl">'</span><span class="s1">meta[name="article-slug"]</span><span class="dl">'</span><span class="p">)?.</span><span class="nx">getAttribute</span><span class="p">(</span><span class="dl">'</span><span class="s1">content</span><span class="dl">'</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="nx">slug</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">fetch</span><span class="p">(</span><span class="s2">`</span><span class="p">${</span><span class="nx">apiUrl</span><span class="p">}</span><span class="s2">/increment?key=</span><span class="p">${</span><span class="nx">slug</span><span class="p">}</span><span class="s2">`</span><span class="p">,</span> <span class="p">{</span> <span class="na">method</span><span class="p">:</span> <span class="dl">'</span><span class="s1">POST</span><span class="dl">'</span> <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="fix-4-author-id">Fix 4: Author ID</h3>
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// In admin.js</span>
+<span class="kd">function</span> <span class="nx">getCurrentUser</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">userStr</span> <span class="o">=</span> <span class="nx">localStorage</span><span class="p">.</span><span class="nx">getItem</span><span class="p">(</span><span class="dl">"</span><span class="s2">user</span><span class="dl">"</span><span class="p">);</span>
+  <span class="k">return</span> <span class="nx">userStr</span> <span class="p">?</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">userStr</span><span class="p">)</span> <span class="p">:</span> <span class="kc">null</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">const</span> <span class="nx">user</span> <span class="o">=</span> <span class="nx">getCurrentUser</span><span class="p">();</span>
+<span class="kd">const</span> <span class="nx">payload</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">author_id</span><span class="p">:</span> <span class="nx">user</span><span class="p">?.</span><span class="nx">id</span> <span class="o">||</span> <span class="kc">null</span><span class="p">,</span>
+  <span class="c1">// ...</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="-architecture-score">📊 Architecture Score</h2>
+
+<p><strong>Điểm số:</strong> 6/10</p>
+
+<p><strong>Breakdown:</strong></p>
+<ul>
+  <li>Structure: 7/10 ✅</li>
+  <li>Security: 4/10 ⚠️</li>
+  <li>Maintainability: 5/10 ⚠️</li>
+  <li>Performance: 6/10 ⚠️</li>
+  <li>UX: 6/10 ⚠️</li>
+</ul>
+
+<p><strong>Đánh giá:</strong></p>
+<ul>
+  <li>✅ Cấu trúc cơ bản tốt</li>
+  <li>✅ Jekyll integration tốt</li>
+  <li>⚠️ Cần fix security issues</li>
+  <li>⚠️ Cần improve code organization</li>
+  <li>⚠️ Cần better error handling</li>
+</ul>
+
+<hr />
+
+<h2 id="-references">📚 References</h2>
+
+<ul>
+  <li><a href="https://jekyllrb.com/docs/best-practices/">Jekyll Best Practices</a></li>
+  <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html">OWASP XSS Prevention</a></li>
+  <li><a href="https://www.patterns.dev/">Frontend Architecture Patterns</a></li>
+</ul>
+
+
+    </main>
+    <footer class="site">
+  <div class="wrap">
+    <div class="panel">
+      <div>
+        <span class="pill">EN/VI</span>
+        <span class="pill">GitHub Pages</span>
+        <span class="pill">Jekyll</span>
+      </div>
+      <div style="margin-top: 10px;">
+        © 2026 SE-knowledges. Built with Jekyll on GitHub Pages.
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+    
+    <!-- Global API Configuration -->
+    <script>
+      window.API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      window.VIEW_API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      console.log("API URL configured:", window.API_URL);
+    </script>
+    
+    <!-- Load utils.js for all pages -->
+    <script src="/SE-knowledges/pr-preview/pr-14/assets/js/utils.js"></script>
+    
+    <!-- Page-specific scripts -->
+    
+    
+    
+    
+    
+    
+    
+    
+    <!-- Verify utils loaded -->
+    <script>
+      console.log("Utils loaded:", typeof parseApiResponse !== 'undefined');
+    </script>
+  </body>
+</html>
+
