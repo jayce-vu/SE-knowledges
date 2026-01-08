@@ -31,11 +31,11 @@
     <script src="{{ '/assets/js/utils.js' | relative_url }}"></script>
     
     <!-- Page-specific scripts -->
-    {% if page.path == 'index.html' or page.url == '/' %}
+    {% if page.path == 'index.html' or page.url == '/' or page.layout == 'home' %}
       <!-- Home page scripts -->
       <script src="{{ '/assets/js/home.js' | relative_url }}"></script>
       <script>
-        console.log("Home page scripts loaded");
+        console.log("Home page scripts loaded for:", page.path || page.url);
       </script>
     {% endif %}
     
