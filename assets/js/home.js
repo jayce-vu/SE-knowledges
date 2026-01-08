@@ -95,19 +95,33 @@ console.log("home.js script file loaded");
                 return;
             }
 
-            listContainer.innerHTML = data.map(post => `
+            listContainer.innerHTML = data.map(post => {
+                const baseUrl = window.location.pathname.includes('/en/') ? '/en' : '';
+                const viewUrl = `${baseUrl}/SE-knowledges/view/?slug=${escapeHtml(post.slug)}`;
+                
+                return `
                 <article class="post-preview">
-                    <a href="/view?slug=${escapeHtml(post.slug)}">
-                        <h2 class="post-title">${escapeHtml(post.title)}</h2>
-                        ${post.excerpt ? `<h3 class="post-subtitle">${escapeHtml(post.excerpt)}</h3>` : ''}
-                    </a>
-                    <p class="post-meta">
-                        Posted by ${escapeHtml(post.author_name || 'Author')} on ${formatDate(post.created_at)}
-                        ${post.topic_name ? ` · <span class="topic-tag">${escapeHtml(post.topic_name)}</span>` : ''}
-                    </p>
+                    ${post.thumbnail_url ? `
+                        <div class="post-preview-thumbnail">
+                            <a href="${viewUrl}">
+                                <img src="${post.thumbnail_url}" alt="${escapeHtml(post.title)}" loading="lazy">
+                            </a>
+                        </div>
+                    ` : ''}
+                    <div class="post-preview-content">
+                        <a href="${viewUrl}">
+                            <h2 class="post-title">${escapeHtml(post.title)}</h2>
+                            ${post.excerpt ? `<h3 class="post-subtitle">${escapeHtml(post.excerpt)}</h3>` : ''}
+                        </a>
+                        <p class="post-meta">
+                            Posted by ${escapeHtml(post.author_name || 'Author')} on ${formatDate(post.created_at)}
+                            ${post.topic_name ? ` · <span class="topic-tag">${escapeHtml(post.topic_name)}</span>` : ''}
+                        </p>
+                    </div>
                 </article>
                 <hr>
-            `).join("");
+            `;
+            }).join("");
         }
     });
 })();

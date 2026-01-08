@@ -6,6 +6,29 @@
     <title>
       {% if page.title %}{{ page.title }} · {% endif %}{{ site.title }}
     </title>
+    
+    <!-- Default Meta Tags -->
+    <meta name="description" content="{{ site.description | default: 'Technical notes and articles in Vietnamese and English.' }}" />
+    
+    <!-- Open Graph / Facebook / LinkedIn / WhatsApp / Telegram / Discord / Slack -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="{{ site.url }}{{ site.baseurl }}{{ page.url }}" />
+    <meta property="og:title" content="{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}" />
+    <meta property="og:description" content="{{ site.description | default: 'Technical notes and articles in Vietnamese and English.' }}" />
+    <meta property="og:site_name" content="{{ site.title }}" />
+    <meta property="og:locale" content="{% if page.lang == 'vi' %}vi_VN{% else %}en_US{% endif %}" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="{{ site.url }}{{ site.baseurl }}{{ page.url }}" />
+    <meta name="twitter:title" content="{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}" />
+    <meta name="twitter:description" content="{{ site.description | default: 'Technical notes and articles in Vietnamese and English.' }}" />
+    
+    <!-- Additional Meta Tags for Better Compatibility -->
+    <meta name="theme-color" content="#0b1020" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    
     <link rel="icon" type="image/svg+xml" href="{{ '/assets/favicon.svg' | relative_url }}">
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}" />
     {% if page.path == 'view.html' or page.url contains '/view' %}
