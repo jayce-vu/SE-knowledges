@@ -97,14 +97,14 @@ console.log("home.js script file loaded");
 
             listContainer.innerHTML = data.map(post => {
                 const baseUrl = window.location.pathname.includes('/en/') ? '/en' : '';
-                const viewUrl = `${baseUrl}/view/?slug=${escapeHtml(post.slug)}`;
+                const viewUrl = `${baseUrl}/SE-knowledges/view/?slug=${escapeHtml(post.slug)}`;
                 
                 return `
                 <article class="post-preview">
                     ${post.thumbnail_url ? `
                         <div class="post-preview-thumbnail">
                             <a href="${viewUrl}">
-                                <img src="${escapeHtml(post.thumbnail_url)}" alt="${escapeHtml(post.title)}" loading="lazy">
+                                <img src="${post.thumbnail_url}" alt="${escapeHtml(post.title)}" loading="lazy">
                             </a>
                         </div>
                     ` : ''}
