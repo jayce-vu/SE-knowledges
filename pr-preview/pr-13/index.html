@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>
+      SE-knowledges · SE-knowledges
+    </title>
+    
+    <!-- Default Meta Tags -->
+    <meta name="description" content="Technical notes and articles in Vietnamese and English." />
+    
+    <!-- Open Graph / Facebook / LinkedIn / WhatsApp / Telegram / Discord / Slack -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="/SE-knowledges/pr-preview/pr-13/" />
+    <meta property="og:title" content="SE-knowledges" />
+    <meta property="og:description" content="Technical notes and articles in Vietnamese and English." />
+    <meta property="og:site_name" content="SE-knowledges" />
+    <meta property="og:locale" content="en_US" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="/SE-knowledges/pr-preview/pr-13/" />
+    <meta name="twitter:title" content="SE-knowledges" />
+    <meta name="twitter:description" content="Technical notes and articles in Vietnamese and English." />
+    
+    <!-- Additional Meta Tags for Better Compatibility -->
+    <meta name="theme-color" content="#0b1020" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    
+    <link rel="icon" type="image/svg+xml" href="/SE-knowledges/pr-preview/pr-13/assets/favicon.svg">
+    <link rel="stylesheet" href="/SE-knowledges/pr-preview/pr-13/assets/css/style.css" />
+    
+  </head>
+  <body>
+    <header class="site">
+  <div class="wrap nav">
+    <div class="brand">
+      <a class="title" href="/SE-knowledges/pr-preview/pr-13/">SE-knowledges</a>
+      <span class="subtitle">Technical notes and articles in Vietnamese and English.</span>
+    </div>
+    <div>
+      
+      
+      
+      
+
+      
+
+      
+        <a class="button" href="/SE-knowledges/pr-preview/pr-13/en/">English</a>
+        <a class="button" href="/SE-knowledges/pr-preview/pr-13/vi/">Tiếng Việt</a>
+      
+      
+      <!-- Auth Button (Hidden by default, JS toggles) -->
+      <a class="button" id="auth-btn" href="/SE-knowledges/pr-preview/pr-13/login/" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
+      <!-- New Post Button (Only visible when logged in) -->
+      <a class="button" id="new-post-btn" href="/SE-knowledges/pr-preview/pr-13/admin/" style="margin-left: 10px; border: 1px solid #7ee787; background: rgba(126, 231, 135, 0.1); display: none;">+ New Post</a>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem("token");
+      const authBtn = document.getElementById("auth-btn");
+      const newPostBtn = document.getElementById("new-post-btn");
+      
+      if (token) {
+        // User is logged in
+        authBtn.textContent = "Admin";
+        authBtn.href = "/SE-knowledges/pr-preview/pr-13/admin/";
+        newPostBtn.style.display = "inline-block";
+      } else {
+        // User is not logged in
+        newPostBtn.style.display = "none";
+      }
+    });
+  </script>
+</header>
+
+    <main class="wrap">
+      <div id="home-app">
+  <div class="panel">
+    <h1 style="margin-top: 0;">SE-knowledges</h1>
+    
+      <p class="post-meta">Technical notes in English.</p>
+    
+    <p>Welcome to my knowledge base. Here you can find technical notes and articles about software engineering.</p>
+
+<p><a href="/SE-knowledges/pr-preview/pr-13/vi/">Xem phiên bản Tiếng Việt</a></p>
+
+  </div>
+
+  <div style="height: 16px;"></div>
+
+  <!-- Filters / Loading State -->
+  <div class="filters" style="margin-bottom: 20px; text-align: center;">
+    <select id="topic-filter" style="padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
+      <option value="">All Topics</option>
+      <!-- JS will populate -->
+    </select>
+  </div>
+
+  <div id="loading-indicator" style="text-align: center; padding: 20px;">
+    Loading articles...
+  </div>
+
+  <!-- Article List Container -->
+  <div id="article-list" class="posts-list" style="display: none;">
+    <!-- JS will populate this -->
+  </div>
+</div>
+
+<!-- Scripts are loaded in default.html layout -->
+
+    </main>
+    <footer class="site">
+  <div class="wrap">
+    <div class="panel">
+      <div>
+        <span class="pill">EN/VI</span>
+        <span class="pill">GitHub Pages</span>
+        <span class="pill">Jekyll</span>
+      </div>
+      <div style="margin-top: 10px;">
+        © 2026 SE-knowledges. Built with Jekyll on GitHub Pages.
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+    
+    <!-- Global API Configuration -->
+    <script>
+      window.API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      window.VIEW_API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      console.log("API URL configured:", window.API_URL);
+    </script>
+    
+    <!-- Load utils.js for all pages -->
+    <script src="/SE-knowledges/pr-preview/pr-13/assets/js/utils.js"></script>
+    
+    <!-- Page-specific scripts -->
+    
+      <!-- Home page scripts -->
+      <script src="/SE-knowledges/pr-preview/pr-13/assets/js/home.js"></script>
+      <script>
+        console.log("Home page scripts loaded for:", page.path || page.url);
+      </script>
+    
+    
+    
+    
+    
+    
+    
+    
+    <!-- Verify utils loaded -->
+    <script>
+      console.log("Utils loaded:", typeof parseApiResponse !== 'undefined');
+    </script>
+  </body>
+</html>
+

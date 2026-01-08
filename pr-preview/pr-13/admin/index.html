@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog CMS - Admin</title>
+    <link rel="icon" type="image/svg+xml" href="/SE-knowledges/pr-preview/pr-13/assets/favicon.svg">
+    <link rel="stylesheet" href="/SE-knowledges/pr-preview/pr-13/assets/css/style.css">
+    <link rel="stylesheet" href="/SE-knowledges/pr-preview/pr-13/assets/css/admin.css">
+    <!-- Marked.js for Markdown Preview -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1>Blog Content Management</h1>
+            <div class="actions">
+                <button id="btn-create-topic" class="btn-sm" style="margin-right: 10px;">+ Tạo Chủ đề</button>
+                <button id="btn-save" class="btn-primary">Lưu bài viết</button>
+            </div>
+        </header>
+
+        <div class="admin-layout">
+            <!-- Sidebar: List posts -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h3>Bài viết</h3>
+                    <button id="btn-new" class="btn-sm">+ Mới</button>
+                </div>
+                <ul id="post-list" class="post-list">
+                    <!-- JS will load posts here -->
+                    <li class="loading">Đang tải...</li>
+                </ul>
+            </aside>
+
+            <!-- Main Editor -->
+            <main class="editor-area">
+                <form id="post-form">
+                    <input type="hidden" id="post-id">
+                    
+                    <!-- Common Metadata -->
+                    <div class="meta-section">
+                        <div class="form-group">
+                            <label>Chủ đề (Topic)</label>
+                            <select id="topic-select">
+                                <option value="">Loading...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Ảnh bìa (URL)</label>
+                            <input type="text" id="thumbnail-url" placeholder="https://...">
+                        </div>
+                        <div class="form-group checkbox">
+                            <input type="checkbox" id="is-published">
+                            <label for="is-published">Công khai (Publish)</label>
+                        </div>
+                        <div class="form-group">
+                            <label>Tags (Comma separated)</label>
+                            <input type="text" id="post-tags" placeholder="tech, cloudflare, guide">
+                        </div>
+                    </div>
+
+                    <!-- Language Tabs -->
+                    <div class="tabs-container">
+                        <div class="tabs-header">
+                            <button type="button" class="tab-btn active" data-lang="vi">Tiếng Việt (VI)</button>
+                            <button type="button" class="tab-btn" data-lang="en">English (EN)</button>
+                            <div style="margin-left: auto; display: flex; gap: 8px;">
+                                <button type="button" class="btn-preview-toggle" data-lang="vi">👁️ Preview VI</button>
+                                <button type="button" class="btn-preview-toggle" data-lang="en">👁️ Preview EN</button>
+                            </div>
+                        </div>
+
+                        <!-- Vietnamese Content -->
+                        <div class="tab-content active" data-lang="vi">
+                            <div class="form-group">
+                                <label>Tiêu đề (VI)</label>
+                                <input type="text" id="title-vi" class="title-input" placeholder="Nhập tiêu đề tiếng Việt">
+                            </div>
+                            <div class="form-group">
+                                <label>Slug (VI)</label>
+                                <input type="text" id="slug-vi" class="slug-input" placeholder="tieu-de-tieng-viet">
+                            </div>
+                            <div class="form-group">
+                                <label>Mô tả ngắn (Excerpt)</label>
+                                <textarea id="excerpt-vi" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <label style="margin: 0;">Nội dung (Markdown)</label>
+                                    <button type="button" class="btn-expand-editor" data-editor="content-vi" data-preview="preview-vi" title="Mở rộng để so sánh Editor & Preview">
+                                        ⛶ Mở rộng
+                                    </button>
+                                </div>
+                                <div class="markdown-toolbar" data-editor="content-vi">
+                                    <button type="button" class="toolbar-btn" data-action="bold" title="Bold (Ctrl+B)">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="italic" title="Italic (Ctrl+I)">
+                                        <em>I</em>
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="heading" title="Heading">
+                                        H<sub>1</sub>
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="link" title="Insert Link">
+                                        🔗
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="image" title="Insert Image">
+                                        🖼️
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="code" title="Code Block">
+                                        &lt;/&gt;
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="quote" title="Blockquote">
+                                        "
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="list" title="Unordered List">
+                                        •
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="listOrdered" title="Ordered List">
+                                        1.
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="indent" title="Indent">
+                                        →
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="outdent" title="Outdent">
+                                        ←
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="hr" title="Horizontal Rule">
+                                        ─
+                                    </button>
+                                </div>
+                                <div class="editor-wrapper">
+                                    <textarea id="content-vi" class="markdown-editor" rows="15"></textarea>
+                                    <div id="preview-vi" class="markdown-preview" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- English Content -->
+                        <div class="tab-content" data-lang="en">
+                            <div class="form-group">
+                                <label>Title (EN)</label>
+                                <input type="text" id="title-en" class="title-input" placeholder="Enter English Title">
+                            </div>
+                            <div class="form-group">
+                                <label>Slug (EN)</label>
+                                <input type="text" id="slug-en" class="slug-input" placeholder="english-title-slug">
+                            </div>
+                            <div class="form-group">
+                                <label>Excerpt</label>
+                                <textarea id="excerpt-en" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <label style="margin: 0;">Content (Markdown)</label>
+                                    <button type="button" class="btn-expand-editor" data-editor="content-en" data-preview="preview-en" title="Expand to compare Editor & Preview">
+                                        ⛶ Expand
+                                    </button>
+                                </div>
+                                <div class="markdown-toolbar" data-editor="content-en">
+                                    <button type="button" class="toolbar-btn" data-action="bold" title="Bold (Ctrl+B)">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="italic" title="Italic (Ctrl+I)">
+                                        <em>I</em>
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="heading" title="Heading">
+                                        H<sub>1</sub>
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="link" title="Insert Link">
+                                        🔗
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="image" title="Insert Image">
+                                        🖼️
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="code" title="Code Block">
+                                        &lt;/&gt;
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="quote" title="Blockquote">
+                                        "
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="list" title="Unordered List">
+                                        •
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="listOrdered" title="Ordered List">
+                                        1.
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="indent" title="Indent">
+                                        →
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="outdent" title="Outdent">
+                                        ←
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="hr" title="Horizontal Rule">
+                                        ─
+                                    </button>
+                                </div>
+                                <div class="editor-wrapper">
+                                    <textarea id="content-en" class="markdown-editor" rows="15"></textarea>
+                                    <div id="preview-en" class="markdown-preview" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <!-- Fullscreen Editor Modal -->
+    <div id="fullscreen-editor-modal" class="fullscreen-modal" style="display: none;">
+        <div class="fullscreen-header">
+            <h3 id="fullscreen-title">Editor & Preview</h3>
+            <button type="button" class="btn-close-fullscreen" title="Đóng (Esc)">✕</button>
+        </div>
+        <div class="fullscreen-content split-view">
+            <div class="fullscreen-editor-panel">
+                <div class="fullscreen-toolbar">
+                    <div class="markdown-toolbar" id="fullscreen-toolbar"></div>
+                </div>
+                <textarea id="fullscreen-editor" class="fullscreen-textarea"></textarea>
+            </div>
+            <div class="fullscreen-preview-panel">
+                <div class="fullscreen-preview-header">
+                    <span>Preview</span>
+                    <button type="button" class="btn-toggle-split" title="Toggle Split View">⇄</button>
+                </div>
+                <div id="fullscreen-preview" class="fullscreen-preview-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+        window.VIEW_API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+    </script>
+    <script src="/SE-knowledges/pr-preview/pr-13/assets/js/utils.js"></script>
+    <script src="/SE-knowledges/pr-preview/pr-13/assets/js/admin.js"></script>
+</body>
+</html>
