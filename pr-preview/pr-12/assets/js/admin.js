@@ -25,6 +25,9 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("title-en").addEventListener("input", (e) => {
         document.getElementById("slug-en").value = slugify(e.target.value);
     });
+
+    // Setup paste formatting for markdown editors
+    setupPasteFormatting();
 });
 
 // --- Tabs Logic ---
@@ -265,4 +268,146 @@ async function createTopic() {
         console.error(e);
         alert("Lỗi hệ thống");
     }
+}
+
+// --- Paste Formatting ---
+function setupPasteFormatting() {
+    const markdownEditors = document.querySelectorAll('.markdown-editor');
+    
+    markdownEditors.forEach(editor => {
+        editor.addEventListener('paste', async (e) => {
+            e.preventDefault();
+            
+            const clipboardData = e.clipboardData || window.clipboardData;
+            const htmlData = clipboardData.getData('text/html');
+            const plainData = clipboardData.getData('text/plain');
+            
+            if (!htmlData && !plainData) return;
+            
+            // Get cursor position
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const text = editor.value;
+            
+            // Convert HTML to Markdown if HTML detected
+            let formattedText = htmlData ? htmlToMarkdown(htmlData) : formatPlainTextToMarkdown(plainData);
+            
+            // Insert formatted text at cursor position
+            editor.value = text.substring(0, start) + formattedText + text.substring(end);
+            
+            // Restore cursor position after inserted text
+            const newCursorPos = start + formattedText.length;
+            editor.setSelectionRange(newCursorPos, newCursorPos);
+            
+            // Trigger input event for any listeners
+            editor.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+    });
+}
+
+// Convert HTML to Markdown
+function htmlToMarkdown(html) {
+    // Create a temporary div to parse HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    
+    // Get plain text first
+    let markdown = tempDiv.innerText || tempDiv.textContent || '';
+    
+    // Process links - replace with markdown format
+    tempDiv.querySelectorAll('a').forEach(link => {
+        const href = link.getAttribute('href') || '';
+        const text = link.textContent || '';
+        if (href && text && markdown.includes(text)) {
+            markdown = markdown.replace(text, `[${text}](${href})`);
+        }
+    });
+    
+    // Process images
+    tempDiv.querySelectorAll('img').forEach(img => {
+        const src = img.getAttribute('src') || '';
+        const alt = img.getAttribute('alt') || '';
+        if (src) {
+            markdown += `\n![${alt}](${src})\n`;
+        }
+    });
+    
+    // Process headings
+    ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].forEach((tag, index) => {
+        tempDiv.querySelectorAll(tag).forEach(heading => {
+            const text = heading.textContent || '';
+            const prefix = '#'.repeat(index + 1) + ' ';
+            if (markdown.includes(text)) {
+                markdown = markdown.replace(text, prefix + text);
+            }
+        });
+    });
+    
+    // Process bold
+    tempDiv.querySelectorAll('strong, b').forEach(bold => {
+        const text = bold.textContent || '';
+        if (text && markdown.includes(text)) {
+            markdown = markdown.replace(text, `**${text}**`);
+        }
+    });
+    
+    // Process italic
+    tempDiv.querySelectorAll('em, i').forEach(italic => {
+        const text = italic.textContent || '';
+        if (text && markdown.includes(text) && !text.includes('**')) {
+            markdown = markdown.replace(text, `*${text}*`);
+        }
+    });
+    
+    // Process code blocks
+    tempDiv.querySelectorAll('pre code').forEach(code => {
+        const text = code.textContent || '';
+        if (text && markdown.includes(text)) {
+            markdown = markdown.replace(text, '```\n' + text + '\n```');
+        }
+    });
+    
+    // Process inline code
+    tempDiv.querySelectorAll('code:not(pre code)').forEach(code => {
+        const text = code.textContent || '';
+        if (text && markdown.includes(text) && !text.includes('```')) {
+            markdown = markdown.replace(text, '`' + text + '`');
+        }
+    });
+    
+    // Process lists - convert to markdown bullets
+    tempDiv.querySelectorAll('ul li, ol li').forEach(li => {
+        const text = li.textContent || '';
+        if (text && markdown.includes(text)) {
+            markdown = markdown.replace(text, '- ' + text);
+        }
+    });
+    
+    // Clean up extra whitespace
+    markdown = markdown.replace(/\n{3,}/g, '\n\n');
+    
+    return markdown.trim();
+}
+
+// Format plain text to Markdown
+function formatPlainTextToMarkdown(text) {
+    if (!text) return '';
+    
+    let formatted = text;
+    
+    // Auto-detect URLs and convert to links
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    formatted = formatted.replace(urlRegex, '[$1]($1)');
+    
+    // Auto-detect email addresses
+    const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+    formatted = formatted.replace(emailRegex, '[$1](mailto:$1)');
+    
+    // Detect numbered lists (lines starting with numbers)
+    formatted = formatted.replace(/^(\d+)\.\s+(.+)$/gm, '$1. $2');
+    
+    // Detect bullet points (lines starting with -, •, or *)
+    formatted = formatted.replace(/^([•\-\*])\s+(.+)$/gm, '- $2');
+    
+    return formatted;
 }
