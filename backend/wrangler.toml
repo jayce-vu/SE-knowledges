@@ -9,7 +9,7 @@ compatibility_date = "2024-01-01"
 [[d1_databases]]
 binding = "DB"  # Tên biến này phải khớp với code trong worker.js (env.DB)
 database_name = "blog-views-db"
-database_id = "YOUR_D1_DATABASE_ID"  # Thay bằng ID thực tế của bạn
+database_id = "39d7d189-bd47-41dd-9f0f-6926d0f9f9e3"
 
 # Hoặc nếu muốn dùng preview database cho development:
 # [[d1_databases]]

@@ -42,17 +42,46 @@
 
             // Render Meta
             document.getElementById("post-title").textContent = data.title || "";
-            document.getElementById("post-excerpt").textContent = data.excerpt || "";
+            
+            const excerptEl = document.getElementById("post-excerpt");
+            if (data.excerpt) {
+                excerptEl.textContent = data.excerpt;
+                excerptEl.style.display = "block";
+            } else {
+                excerptEl.style.display = "none";
+            }
+            
             document.getElementById("post-author").textContent = data.author_name || "Unknown";
             document.getElementById("post-date").textContent = formatDate(data.created_at);
             
-            if (data.thumbnail_url) {
-                document.getElementById("header-bg").style.backgroundImage = `url('${escapeHtml(data.thumbnail_url)}')`;
+            // Set header background if thumbnail exists
+            const headerEl = document.getElementById("post-header");
+            if (data.thumbnail_url && headerEl) {
+                headerEl.style.backgroundImage = `linear-gradient(rgba(11, 16, 32, 0.85), rgba(11, 16, 32, 0.85)), url('${escapeHtml(data.thumbnail_url)}')`;
+                headerEl.style.backgroundSize = "cover";
+                headerEl.style.backgroundPosition = "center";
             }
 
-            // Render Content (Markdown is safe from marked.js)
+            // Render Content (Markdown with syntax highlighting)
             if (typeof marked !== 'undefined') {
-                document.getElementById("markdown-body").innerHTML = marked.parse(data.content || "");
+                // Configure marked.js options
+                marked.setOptions({
+                    breaks: true,
+                    gfm: true,
+                    headerIds: true,
+                    mangle: false
+                });
+
+                // Parse markdown
+                const html = marked.parse(data.content || "");
+                document.getElementById("markdown-body").innerHTML = html;
+
+                // Apply syntax highlighting to code blocks
+                if (typeof hljs !== 'undefined') {
+                    document.querySelectorAll('#markdown-body pre code').forEach((block) => {
+                        hljs.highlightElement(block);
+                    });
+                }
             } else {
                 // Fallback if marked.js not loaded
                 document.getElementById("markdown-body").textContent = data.content || "";
@@ -61,6 +90,7 @@
             // Show article
             setLoading("loading", false);
             document.getElementById("article-content").style.display = "block";
+            document.getElementById("comments-section").style.display = "block";
 
             // Load Comments
             await loadComments(slug);
@@ -89,14 +119,16 @@
 
             // Render comments with XSS protection
             list.innerHTML = comments.map(c => `
-                <div class="media" style="margin-bottom: 20px; padding: 15px; border-bottom: 1px solid #ddd;">
-                    <div class="media-body">
-                        <h5 class="media-heading">
-                            ${escapeHtml(c.guest_name || c.username || 'Anonymous')} 
-                            <small style="color: #666;">${formatDate(c.created_at)}</small>
-                        </h5>
-                        <p>${escapeHtml(c.content)}</p>
+                <div class="comment-item">
+                    <div class="comment-author">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        ${escapeHtml(c.guest_name || c.username || 'Anonymous')}
+                        <span class="comment-date">${formatDate(c.created_at)}</span>
                     </div>
+                    <div class="comment-content">${escapeHtml(c.content)}</div>
                 </div>
             `).join("");
 
