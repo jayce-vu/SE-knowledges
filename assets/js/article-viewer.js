@@ -12,7 +12,8 @@
 
         currentSlug = new URLSearchParams(window.location.search).get("slug");
         if (!currentSlug) {
-            window.location.href = "/";
+            const baseUrl = getBaseUrl();
+            window.location.href = `${baseUrl}/`;
             return;
         }
 
