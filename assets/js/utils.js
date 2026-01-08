@@ -36,6 +36,14 @@ function getApiUrl() {
   return window.API_URL || window.VIEW_API_URL || '';
 }
 
+// Get base URL for GitHub Pages (includes /SE-knowledges/)
+function getBaseUrl() {
+  const pathname = window.location.pathname;
+  const isEn = pathname.includes('/en/');
+  const basePath = isEn ? '/en' : '';
+  return `${basePath}/SE-knowledges`;
+}
+
 // Get current user from localStorage
 function getCurrentUser() {
   try {

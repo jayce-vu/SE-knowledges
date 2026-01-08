@@ -233,16 +233,74 @@ export default {
 
       // --- ADMIN API (Mock Auth) ---
       
+      // Helper function to get current user from token
+      async function getCurrentUser(authHeader) {
+        if (!authHeader) return null;
+        
+        try {
+          // Decode token (format: "userid:username:timestamp")
+          const tokenData = atob(authHeader.replace('Bearer ', ''));
+          const [userId] = tokenData.split(':');
+          
+          if (!userId || isNaN(parseInt(userId))) return null;
+          
+          const user = await env.DB.prepare("SELECT id, username, role FROM users WHERE id = ?").bind(parseInt(userId)).first();
+          return user || null;
+        } catch (e) {
+          return null;
+        }
+      }
+      
+      // GET /api/admin/articles - List articles of current user
+      if (path === "/api/admin/articles" && request.method === "GET") {
+        const authHeader = request.headers.get("Authorization");
+        const user = await getCurrentUser(authHeader);
+        
+        if (!user) return error("Unauthorized", 401);
+        
+        const lang = url.searchParams.get("lang") || "vi";
+        
+        // Get articles of current user only
+        const { results } = await env.DB.prepare(`
+          SELECT DISTINCT
+            a.id,
+            a.topic_id,
+            a.author_id,
+            a.thumbnail_url,
+            a.is_published,
+            a.created_at,
+            a.updated_at,
+            t.slug,
+            t.title,
+            t.excerpt,
+            top.name as topic_name,
+            u.username as author_name
+          FROM articles a
+          JOIN article_translations t ON a.id = t.article_id
+          LEFT JOIN topics top ON a.topic_id = top.id
+          LEFT JOIN users u ON a.author_id = u.id
+          WHERE a.author_id = ? AND t.language = ?
+          ORDER BY a.created_at DESC
+        `).bind(user.id, lang).all();
+        
+        return json({ data: results });
+      }
+      
       // GET /api/admin/articles/:id - Get FULL article with ALL translations for editing
       if (path.startsWith("/api/admin/articles/") && request.method === "GET") {
+          const authHeader = request.headers.get("Authorization");
+          const user = await getCurrentUser(authHeader);
+          
+          if (!user) return error("Unauthorized", 401);
+          
           const id = path.split("/").pop();
           
           if (!id || isNaN(parseInt(id))) {
             return error("Invalid article ID", 400);
           }
 
-          const article = await env.DB.prepare("SELECT * FROM articles WHERE id = ?").bind(id).first();
-          if (!article) return error("Article not found", 404);
+          const article = await env.DB.prepare("SELECT * FROM articles WHERE id = ? AND author_id = ?").bind(id, user.id).first();
+          if (!article) return error("Article not found or access denied", 404);
 
           const { results: translations } = await env.DB.prepare(
               "SELECT * FROM article_translations WHERE article_id = ?"
@@ -258,12 +316,17 @@ export default {
       // POST /api/admin/articles - Create/Update Article with multiple translations
       if (path === "/api/admin/articles" && request.method === "POST") {
         const authHeader = request.headers.get("Authorization");
-        if (!authHeader) return error("Unauthorized", 401); // Simple check
+        const user = await getCurrentUser(authHeader);
+        
+        if (!user) return error("Unauthorized", 401);
 
         const body = await safeJsonParse(request);
         if (!body) return error("Invalid JSON body", 400);
 
-        const { id, topic_id, author_id, thumbnail_url, is_published, tags, translations } = body; 
+        const { id, topic_id, thumbnail_url, is_published, tags, translations } = body;
+        
+        // Use current user's ID as author_id (prevent user from creating articles for others)
+        const author_id = user.id; 
         
         // Validation
         if (!translations || !Array.isArray(translations) || translations.length === 0) {
@@ -297,9 +360,14 @@ export default {
             ).bind(topic_id, author_id, thumbnail_url, is_published ? 1 : 0, now, now).run();
             articleId = result.meta.last_row_id;
         } else {
+            // Check ownership before update
+            const existingArticle = await env.DB.prepare("SELECT author_id FROM articles WHERE id = ?").bind(articleId).first();
+            if (!existingArticle) return error("Article not found", 404);
+            if (existingArticle.author_id !== user.id) return error("Access denied: You can only edit your own articles", 403);
+            
             await env.DB.prepare(
-                `UPDATE articles SET topic_id=?, author_id=?, thumbnail_url=?, is_published=?, updated_at=? WHERE id=?`
-            ).bind(topic_id, author_id, thumbnail_url, is_published ? 1 : 0, now, articleId).run();
+                `UPDATE articles SET topic_id=?, thumbnail_url=?, is_published=?, updated_at=? WHERE id=? AND author_id=?`
+            ).bind(topic_id, thumbnail_url, is_published ? 1 : 0, now, articleId, user.id).run();
         }
 
         // 2. Upsert Translations
