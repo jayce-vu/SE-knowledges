@@ -2,43 +2,33 @@
 layout: default
 ---
 
-<div class="panel">
-  <h1 style="margin-top: 0;">{{ page.title }}</h1>
-  {% if page.description %}
-    <p class="post-meta">{{ page.description }}</p>
-  {% endif %}
-  {{ content }}
+<div id="home-app">
+  <div class="panel">
+    <h1 style="margin-top: 0;">{{ page.title }}</h1>
+    {% if page.description %}
+      <p class="post-meta">{{ page.description }}</p>
+    {% endif %}
+    {{ content }}
+  </div>
+
+  <div style="height: 16px;"></div>
+
+  <!-- Filters / Loading State -->
+  <div class="filters" style="margin-bottom: 20px; text-align: center;">
+    <select id="topic-filter" style="padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
+      <option value="">All Topics</option>
+      <!-- JS will populate -->
+    </select>
+  </div>
+
+  <div id="loading-indicator" style="text-align: center; padding: 20px;">
+    Loading articles...
+  </div>
+
+  <!-- Article List Container -->
+  <div id="article-list" class="posts-list" style="display: none;">
+    <!-- JS will populate this -->
+  </div>
 </div>
 
-<div style="height: 16px;"></div>
-
-<div class="panel">
-  <!-- 
-    Logic lấy danh sách bài viết từ collection 'content'.
-    Lọc theo ngôn ngữ hiện tại của trang (page.lang) nếu có.
-  -->
-  {% assign all_posts = site.content | sort: 'date' | reverse %}
-  
-  {% if page.lang == 'vi' %}
-    {% assign posts = all_posts | where: 'lang', 'vi' %}
-  {% elsif page.lang == 'en' %}
-    {% assign posts = all_posts | where: 'lang', 'en' %}
-  {% else %}
-    <!-- Nếu không xác định ngôn ngữ trang, hiển thị tất cả (hoặc fallback về một ngôn ngữ) -->
-    {% assign posts = all_posts %}
-  {% endif %}
-
-  <h2 style="margin-top: 0;">{% if page.lang == 'vi' %}Bài viết mới{% else %}Recent Posts{% endif %}</h2>
-  
-  <ul class="post-list">
-    {% for p in posts %}
-      <li>
-        <div class="post-meta">{{ p.date | date: "%Y-%m-%d" }} · <span class="pill">{{ p.lang }}</span></div>
-        <div><a href="{{ p.url | relative_url }}"><strong>{{ p.title }}</strong></a></div>
-        {% if p.summary %}
-          <div class="post-meta">{{ p.summary }}</div>
-        {% endif %}
-      </li>
-    {% endfor %}
-  </ul>
-</div>
+<!-- Scripts are loaded in default.html layout -->

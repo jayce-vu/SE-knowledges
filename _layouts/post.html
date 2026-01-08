@@ -6,56 +6,108 @@ layout: default
 <meta name="pair-id" content="{{ page.pair_id }}">
 {% endif %}
 
-<article class="panel">
-  <div class="post-meta">
-    {{ page.date | date: "%Y-%m-%d" }}
-    <span id="view-count-container" style="display:none">
-      · <span id="view-count">...</span> views
-    </span>
-    {% if page.tags %}
-      ·
-      {% for t in page.tags %}
-        <span class="pill">{{ t }}</span>
-      {% endfor %}
+<article class="post-article">
+  <!-- Post Header -->
+  <header class="post-header">
+    <h1 class="post-title">{{ page.title }}</h1>
+    
+    {% if page.summary %}
+    <p class="post-summary">{{ page.summary }}</p>
     {% endif %}
-  </div>
 
-  <h1 style="margin-top: 6px;">{{ page.title }}</h1>
-  {% if page.summary %}
-    <p class="post-meta">{{ page.summary }}</p>
-  {% endif %}
+    <div class="post-meta">
+      <span class="post-date">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        {{ page.date | date: "%B %d, %Y" }}
+      </span>
+      
+      <span id="view-count-container" class="post-views" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+        <span id="view-count">0</span> views
+      </span>
 
-  {% if page.pair_id %}
-    {% if page.lang == 'en' %}
-      {% assign other = site.vi_posts | where: "pair_id", page.pair_id | first %}
-      {% if other %}
-        <p class="post-meta">Also available in Vietnamese: <a href="{{ other.url | relative_url }}">{{ other.title }}</a></p>
+      {% if page.tags %}
+      <div class="post-tags">
+        {% for t in page.tags %}
+          <span class="tag-pill">{{ t }}</span>
+        {% endfor %}
+      </div>
       {% endif %}
-    {% elsif page.lang == 'vi' %}
-      {% assign other = site.en_posts | where: "pair_id", page.pair_id | first %}
-      {% if other %}
-        <p class="post-meta">Cũng có bản tiếng Anh: <a href="{{ other.url | relative_url }}">{{ other.title }}</a></p>
+    </div>
+
+    {% if page.pair_id %}
+      {% if page.lang == 'en' %}
+        {% assign other = site.vi_posts | where: "pair_id", page.pair_id | first %}
+        {% if other %}
+          <div class="post-language-switch">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            Also available in <a href="{{ other.url | relative_url }}">Vietnamese</a>
+          </div>
+        {% endif %}
+      {% elsif page.lang == 'vi' %}
+        {% assign other = site.en_posts | where: "pair_id", page.pair_id | first %}
+        {% if other %}
+          <div class="post-language-switch">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            Cũng có bản <a href="{{ other.url | relative_url }}">tiếng Anh</a>
+          </div>
+        {% endif %}
       {% endif %}
     {% endif %}
-  {% endif %}
+  </header>
 
-  <div>
+  <!-- Post Content -->
+  <div class="post-content">
     {{ content }}
   </div>
 </article>
 
+<!-- Highlight.js for syntax highlighting -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
 <script>
   window.VIEW_API_URL = "{{ site.view_api_url }}";
+  
+  // Apply syntax highlighting to code blocks after page load
+  document.addEventListener("DOMContentLoaded", () => {
+    if (typeof hljs !== 'undefined') {
+      document.querySelectorAll('.post-content pre code').forEach((block) => {
+        hljs.highlightElement(block);
+      });
+    }
+  });
 </script>
 <script src="{{ '/assets/js/view-count.js' | relative_url }}"></script>
 
-<div style="height: 16px;"></div>
-
-<div class="panel">
+<!-- Back Button -->
+<nav class="post-navigation">
   {% if page.lang == 'vi' %}
-    <a href="{{ '/vi/' | relative_url }}">← Quay lại danh sách</a>
+    <a href="{{ '/vi/' | relative_url }}" class="back-link">
   {% else %}
-    <a href="{{ '/en/' | relative_url }}">← Back to list</a>
+    <a href="{{ '/en/' | relative_url }}" class="back-link">
   {% endif %}
-</div>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    {% if page.lang == 'vi' %}
+      Quay lại danh sách
+    {% else %}
+      Back to list
+    {% endif %}
+  </a>
+</nav>
 
