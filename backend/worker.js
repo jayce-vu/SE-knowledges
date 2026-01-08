@@ -253,41 +253,47 @@ export default {
       
       // GET /api/admin/articles - List articles of current user
       if (path === "/api/admin/articles" && request.method === "GET") {
-        const authHeader = request.headers.get("Authorization");
-        const user = await getCurrentUser(authHeader);
-        
-        if (!user) return error("Unauthorized", 401);
-        
-        const lang = url.searchParams.get("lang") || "vi";
-        
-        // Get articles of current user only
-        const { results } = await env.DB.prepare(`
-          SELECT DISTINCT
-            a.id,
-            a.topic_id,
-            a.author_id,
-            a.thumbnail_url,
-            a.is_published,
-            a.created_at,
-            a.updated_at,
-            t.slug,
-            t.title,
-            t.excerpt,
-            top.name as topic_name,
-            u.username as author_name
-          FROM articles a
-          JOIN article_translations t ON a.id = t.article_id
-          LEFT JOIN topics top ON a.topic_id = top.id
-          LEFT JOIN users u ON a.author_id = u.id
-          WHERE a.author_id = ? AND t.language = ?
-          ORDER BY a.created_at DESC
-        `).bind(user.id, lang).all();
-        
-        return json({ data: results });
+        try {
+          const authHeader = request.headers.get("Authorization");
+          const user = await getCurrentUser(authHeader);
+          
+          if (!user) return error("Unauthorized", 401);
+          
+          const lang = url.searchParams.get("lang") || "vi";
+          
+          // Get articles of current user only
+          const { results } = await env.DB.prepare(`
+            SELECT DISTINCT
+              a.id,
+              a.topic_id,
+              a.author_id,
+              a.thumbnail_url,
+              a.is_published,
+              a.created_at,
+              a.updated_at,
+              t.slug,
+              t.title,
+              t.excerpt,
+              top.name as topic_name,
+              u.username as author_name
+            FROM articles a
+            JOIN article_translations t ON a.id = t.article_id
+            LEFT JOIN topics top ON a.topic_id = top.id
+            LEFT JOIN users u ON a.author_id = u.id
+            WHERE a.author_id = ? AND t.language = ?
+            ORDER BY a.created_at DESC
+          `).bind(user.id, lang).all();
+          
+          return json({ data: results || [] });
+        } catch (e) {
+          console.error("Error in GET /api/admin/articles:", e);
+          return error(`Server error: ${e.message}`, 500);
+        }
       }
       
       // GET /api/admin/articles/:id - Get FULL article with ALL translations for editing
       if (path.startsWith("/api/admin/articles/") && request.method === "GET") {
+        try {
           const authHeader = request.headers.get("Authorization");
           const user = await getCurrentUser(authHeader);
           
@@ -310,7 +316,11 @@ export default {
             SELECT tag_id FROM article_tags WHERE article_id = ?
         `).bind(id).all();
 
-          return json({ article, translations, tag_ids: tags.map(t => t.tag_id) });
+          return json({ article, translations: translations || [], tag_ids: tags ? tags.map(t => t.tag_id) : [] });
+        } catch (e) {
+          console.error("Error in GET /api/admin/articles/:id:", e);
+          return error(`Server error: ${e.message}`, 500);
+        }
       }
 
       // POST /api/admin/articles - Create/Update Article with multiple translations
@@ -372,8 +382,27 @@ export default {
           }
 
           // 2. Upsert Translations
+          // Check for slug conflicts first (slug is UNIQUE globally in schema)
+          for (const t of translations) {
+            const existingSlug = await env.DB.prepare(
+              "SELECT article_id, language FROM article_translations WHERE slug = ?"
+            ).bind(t.slug).first();
+            
+            if (existingSlug) {
+              // If slug exists but belongs to different article, it's a conflict
+              if (existingSlug.article_id !== articleId) {
+                return error(`Slug "${t.slug}" already exists for another article`, 409);
+              }
+              // If slug exists for same article but different language, also conflict (slug must be unique globally)
+              if (existingSlug.language !== t.language) {
+                return error(`Slug "${t.slug}" already exists for ${existingSlug.language} version of this article`, 409);
+              }
+            }
+          }
+          
           const stmts = [];
           for (const t of translations) {
+               // Use ON CONFLICT for (article_id, language) but handle slug conflicts separately
                stmts.push(env.DB.prepare(
                    `INSERT INTO article_translations (article_id, language, slug, title, content, excerpt, meta_description, updated_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
