@@ -96,10 +96,20 @@ export default {
         const offset = Math.max(parseInt(url.searchParams.get("offset")) || 0, 0);
 
         const { results } = await env.DB.prepare(`
-          SELECT a.id, t.slug, t.title, t.excerpt, t.language, a.created_at, a.thumbnail_url, top.name as topic_name 
+          SELECT 
+            a.id, 
+            t.slug, 
+            t.title, 
+            t.excerpt, 
+            t.language, 
+            a.created_at, 
+            a.thumbnail_url, 
+            top.name as topic_name,
+            u.username as author_name
           FROM articles a
           JOIN article_translations t ON a.id = t.article_id
           LEFT JOIN topics top ON a.topic_id = top.id
+          LEFT JOIN users u ON a.author_id = u.id
           WHERE a.is_published = 1 AND t.language = ?
           ORDER BY a.created_at DESC
           LIMIT ? OFFSET ?
