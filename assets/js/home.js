@@ -1,8 +1,12 @@
 // Home Page Script - Loads articles list
+console.log("home.js script file loaded");
+
 (function() {
+    console.log("home.js IIFE executing");
     const API_URL = window.API_URL || window.VIEW_API_URL || '';
     
     document.addEventListener("DOMContentLoaded", async () => {
+        console.log("DOMContentLoaded fired, API_URL:", API_URL);
         if (!API_URL) {
             console.error("API URL not configured");
             showError("API configuration error", "loading-indicator");

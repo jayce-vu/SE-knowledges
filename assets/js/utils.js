@@ -28,6 +28,9 @@ function parseApiResponse(data) {
   return { data: [], pagination: null };
 }
 
+// Debug: Log when utils.js is loaded
+console.log("utils.js loaded successfully");
+
 // Get API URL from config
 function getApiUrl() {
   return window.API_URL || window.VIEW_API_URL || '';
