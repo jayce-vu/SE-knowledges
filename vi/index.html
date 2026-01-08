@@ -8,6 +8,7 @@
     </title>
     <link rel="icon" type="image/svg+xml" href="/SE-knowledges/assets/favicon.svg">
     <link rel="stylesheet" href="/SE-knowledges/assets/css/style.css" />
+    
   </head>
   <body>
     <header class="site">
@@ -30,7 +31,9 @@
       
       
       <!-- Auth Button (Hidden by default, JS toggles) -->
-      <a class="button" id="auth-btn" href="/SE-knowledges/login.html" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
+      <a class="button" id="auth-btn" href="/SE-knowledges/login/" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
+      <!-- New Post Button (Only visible when logged in) -->
+      <a class="button" id="new-post-btn" href="/SE-knowledges/admin/" style="margin-left: 10px; border: 1px solid #7ee787; background: rgba(126, 231, 135, 0.1); display: none;">+ New Post</a>
     </div>
   </div>
   
@@ -38,52 +41,54 @@
     document.addEventListener("DOMContentLoaded", () => {
       const token = localStorage.getItem("token");
       const authBtn = document.getElementById("auth-btn");
+      const newPostBtn = document.getElementById("new-post-btn");
+      
       if (token) {
+        // User is logged in
         authBtn.textContent = "Admin";
-        authBtn.href = "/SE-knowledges/admin.html";
+        authBtn.href = "/SE-knowledges/admin/";
+        newPostBtn.style.display = "inline-block";
+      } else {
+        // User is not logged in
+        newPostBtn.style.display = "none";
       }
     });
   </script>
 </header>
 
     <main class="wrap">
-      <div class="panel">
-  <h1 style="margin-top: 0;">Tiếng Việt</h1>
-  
-    <p class="post-meta">Bài viết kỹ thuật bằng tiếng Việt.</p>
-  
-  <p>Bạn có thể dùng khu vực này để ghim series, link quan trọng, hoặc hướng dẫn “bắt đầu từ đâu”.</p>
+      <div id="home-app">
+  <div class="panel">
+    <h1 style="margin-top: 0;">Tiếng Việt</h1>
+    
+      <p class="post-meta">Bài viết kỹ thuật bằng tiếng Việt.</p>
+    
+    <p>Bạn có thể dùng khu vực này để ghim series, link quan trọng, hoặc hướng dẫn “bắt đầu từ đâu”.</p>
 
 
+  </div>
+
+  <div style="height: 16px;"></div>
+
+  <!-- Filters / Loading State -->
+  <div class="filters" style="margin-bottom: 20px; text-align: center;">
+    <select id="topic-filter" style="padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
+      <option value="">All Topics</option>
+      <!-- JS will populate -->
+    </select>
+  </div>
+
+  <div id="loading-indicator" style="text-align: center; padding: 20px;">
+    Loading articles...
+  </div>
+
+  <!-- Article List Container -->
+  <div id="article-list" class="posts-list" style="display: none;">
+    <!-- JS will populate this -->
+  </div>
 </div>
 
-<div style="height: 16px;"></div>
-
-<div class="panel">
-  <!-- 
-    Logic lấy danh sách bài viết từ collection 'content'.
-    Lọc theo ngôn ngữ hiện tại của trang (page.lang) nếu có.
-  -->
-  
-  
-  
-    
-  
-
-  <h2 style="margin-top: 0;">Bài viết mới</h2>
-  
-  <ul class="post-list">
-    
-      <li>
-        <div class="post-meta">2026-01-07 · <span class="pill">vi</span></div>
-        <div><a href="/SE-knowledges/security/secure-storage-banking-analysis/vi/"><strong>PHÂN TÍCH CHI TIẾT: SECURE STORAGE CHUẨN BANKING (ANDROID & iOS)</strong></a></div>
-        
-          <div class="post-meta">Phân tích chi tiết về Secure Storage chuẩn Banking trên Android và iOS, bao gồm Android Keystore, iOS Keychain, Secure Enclave và các tiêu chuẩn bảo mật quan trọng.</div>
-        
-      </li>
-    
-  </ul>
-</div>
+<!-- Scripts are loaded in default.html layout -->
 
     </main>
     <footer class="site">
@@ -102,6 +107,36 @@
 </footer>
 
 
+    
+    <!-- Global API Configuration -->
+    <script>
+      window.API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      window.VIEW_API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      console.log("API URL configured:", window.API_URL);
+    </script>
+    
+    <!-- Load utils.js for all pages -->
+    <script src="/SE-knowledges/assets/js/utils.js"></script>
+    
+    <!-- Page-specific scripts -->
+    
+      <!-- Home page scripts -->
+      <script src="/SE-knowledges/assets/js/home.js"></script>
+      <script>
+        console.log("Home page scripts loaded for:", page.path || page.url);
+      </script>
+    
+    
+    
+    
+    
+    
+    
+    
+    <!-- Verify utils loaded -->
+    <script>
+      console.log("Utils loaded:", typeof parseApiResponse !== 'undefined');
+    </script>
   </body>
 </html>
 

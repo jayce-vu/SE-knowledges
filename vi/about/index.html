@@ -8,6 +8,7 @@
     </title>
     <link rel="icon" type="image/svg+xml" href="/SE-knowledges/assets/favicon.svg">
     <link rel="stylesheet" href="/SE-knowledges/assets/css/style.css" />
+    
   </head>
   <body>
     <header class="site">
@@ -30,7 +31,9 @@
       
       
       <!-- Auth Button (Hidden by default, JS toggles) -->
-      <a class="button" id="auth-btn" href="/SE-knowledges/login.html" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
+      <a class="button" id="auth-btn" href="/SE-knowledges/login/" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
+      <!-- New Post Button (Only visible when logged in) -->
+      <a class="button" id="new-post-btn" href="/SE-knowledges/admin/" style="margin-left: 10px; border: 1px solid #7ee787; background: rgba(126, 231, 135, 0.1); display: none;">+ New Post</a>
     </div>
   </div>
   
@@ -38,9 +41,16 @@
     document.addEventListener("DOMContentLoaded", () => {
       const token = localStorage.getItem("token");
       const authBtn = document.getElementById("auth-btn");
+      const newPostBtn = document.getElementById("new-post-btn");
+      
       if (token) {
+        // User is logged in
         authBtn.textContent = "Admin";
-        authBtn.href = "/SE-knowledges/admin.html";
+        authBtn.href = "/SE-knowledges/admin/";
+        newPostBtn.style.display = "inline-block";
+      } else {
+        // User is not logged in
+        newPostBtn.style.display = "none";
       }
     });
   </script>
@@ -75,6 +85,30 @@
 </footer>
 
 
+    
+    <!-- Global API Configuration -->
+    <script>
+      window.API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      window.VIEW_API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      console.log("API URL configured:", window.API_URL);
+    </script>
+    
+    <!-- Load utils.js for all pages -->
+    <script src="/SE-knowledges/assets/js/utils.js"></script>
+    
+    <!-- Page-specific scripts -->
+    
+    
+    
+    
+    
+    
+    
+    
+    <!-- Verify utils loaded -->
+    <script>
+      console.log("Utils loaded:", typeof parseApiResponse !== 'undefined');
+    </script>
   </body>
 </html>
 

@@ -8,6 +8,10 @@
     </title>
     <link rel="icon" type="image/svg+xml" href="/SE-knowledges/assets/favicon.svg">
     <link rel="stylesheet" href="/SE-knowledges/assets/css/style.css" />
+    
+      <!-- Highlight.js CSS for article viewer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+    
   </head>
   <body>
     <header class="site">
@@ -30,7 +34,9 @@
       
       
       <!-- Auth Button (Hidden by default, JS toggles) -->
-      <a class="button" id="auth-btn" href="/SE-knowledges/login.html" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
+      <a class="button" id="auth-btn" href="/SE-knowledges/login/" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
+      <!-- New Post Button (Only visible when logged in) -->
+      <a class="button" id="new-post-btn" href="/SE-knowledges/admin/" style="margin-left: 10px; border: 1px solid #7ee787; background: rgba(126, 231, 135, 0.1); display: none;">+ New Post</a>
     </div>
   </div>
   
@@ -38,9 +44,16 @@
     document.addEventListener("DOMContentLoaded", () => {
       const token = localStorage.getItem("token");
       const authBtn = document.getElementById("auth-btn");
+      const newPostBtn = document.getElementById("new-post-btn");
+      
       if (token) {
+        // User is logged in
         authBtn.textContent = "Admin";
-        authBtn.href = "/SE-knowledges/admin.html";
+        authBtn.href = "/SE-knowledges/admin/";
+        newPostBtn.style.display = "inline-block";
+      } else {
+        // User is not logged in
+        newPostBtn.style.display = "none";
       }
     });
   </script>
@@ -52,138 +65,65 @@
         Loading article...
     </div>
 
-    <article id="article-content" style="display: none;">
-        <header class="intro-header" id="header-bg" style="background-image: url('/SE-knowledges/assets/img/home-bg.jpg')">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-                        <div class="post-heading">
-                            <h1 id="post-title">Title</h1>
-                            <h2 class="subheading" id="post-excerpt"></h2>
-                            <span class="meta">Posted by <span id="post-author">Author</span> on <span id="post-date">Date</span></span>
-                            
-                            <!-- Language Switcher -->
-                            <div class="lang-switcher" style="margin-top: 20px;">
-                                <button id="btn-vi" class="btn btn-default btn-xs">Tiếng Việt</button>
-                                <button id="btn-en" class="btn btn-default btn-xs">English</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <article id="article-content" class="post-article" style="display: none;">
+        <!-- Post Header -->
+        <header class="post-header" id="post-header">
+            <h1 class="post-title" id="post-title">Title</h1>
+            
+            <p class="post-summary" id="post-excerpt"></p>
+
+            <div class="post-meta">
+                <span class="post-author">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span id="post-author">Author</span>
+                </span>
+                
+                <span class="post-date">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span id="post-date">Date</span>
+                </span>
             </div>
         </header>
 
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-                    <div id="markdown-body">
-                        <!-- Content -->
-                    </div>
-
-                    <hr>
-                    <!-- Comments Section -->
-                    <div class="comments-section">
-                        <h3>Comments</h3>
-                        <div id="comments-list"></div>
-                        <form id="comment-form" style="margin-top: 20px;">
-                            <div class="form-group">
-                                <textarea id="comment-content" class="form-control" placeholder="Write a comment..." required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Submit</button>
-                        </form>
-                    </div>
-                </div>
+        <!-- Post Content -->
+        <div class="post-content">
+            <div id="markdown-body">
+                <!-- Content -->
             </div>
         </div>
     </article>
+
+    <!-- Comments Section -->
+    <div class="comments-section" id="comments-section" style="display: none;">
+        <h3 class="comments-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            Comments
+        </h3>
+        <div id="comments-list"></div>
+        <form id="comment-form" class="comment-form">
+            <div class="form-group">
+                <textarea id="comment-content" placeholder="Write a comment..." required></textarea>
+            </div>
+            <button type="submit" class="btn-submit">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                Submit Comment
+            </button>
+        </form>
+    </div>
 </div>
 
-<!-- Marked.js -->
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-<script>
-    const API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
-    let currentSlug = new URLSearchParams(window.location.search).get("slug");
-
-    document.addEventListener("DOMContentLoaded", async () => {
-        if (!currentSlug) {
-            window.location.href = "/";
-            return;
-        }
-        loadArticle(currentSlug);
-
-        // Comment Form
-        document.getElementById("comment-form").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const content = document.getElementById("comment-content").value;
-            // Mock guest user
-            const payload = {
-                post_slug: currentSlug,
-                content: content,
-                guest_name: "Guest",
-                guest_email: "guest@example.com"
-            };
-            
-            await fetch(`${API_URL}/api/comments`, {
-                method: "POST",
-                body: JSON.stringify(payload)
-            });
-            alert("Comment submitted!");
-            loadComments(currentSlug); // Reload
-            document.getElementById("comment-content").value = "";
-        });
-    });
-
-    async function loadArticle(slug) {
-        try {
-            const res = await fetch(`${API_URL}/api/articles/${slug}`);
-            const data = await res.json();
-
-            if (data.error) {
-                document.getElementById("loading").innerText = "Article not found.";
-                return;
-            }
-
-            // Render Meta
-            document.getElementById("post-title").innerText = data.title;
-            document.getElementById("post-excerpt").innerText = data.excerpt || "";
-            document.getElementById("post-author").innerText = data.author_name || "Unknown";
-            document.getElementById("post-date").innerText = new Date(data.created_at * 1000).toLocaleDateString();
-            
-            if (data.thumbnail_url) {
-                document.getElementById("header-bg").style.backgroundImage = `url('${data.thumbnail_url}')`;
-            }
-
-            // Render Content
-            document.getElementById("markdown-body").innerHTML = marked.parse(data.content || "");
-
-            // Show
-            document.getElementById("loading").style.display = "none";
-            document.getElementById("article-content").style.display = "block";
-
-            // Load Comments
-            loadComments(slug);
-
-        } catch (e) {
-            console.error(e);
-            document.getElementById("loading").innerText = "Error loading article.";
-        }
-    }
-
-    async function loadComments(slug) {
-        const res = await fetch(`${API_URL}/api/comments?post_slug=${slug}`);
-        const comments = await res.json();
-        const list = document.getElementById("comments-list");
-        list.innerHTML = comments.map(c => `
-            <div class="media">
-                <div class="media-body">
-                    <h5 class="media-heading">${c.guest_name || c.username} <small>${new Date(c.created_at * 1000).toLocaleDateString()}</small></h5>
-                    ${c.content}
-                </div>
-            </div>
-        `).join("");
-    }
-</script>
+<!-- Scripts are loaded in default.html layout -->
 
     </main>
     <footer class="site">
@@ -202,6 +142,38 @@
 </footer>
 
 
+    
+    <!-- Global API Configuration -->
+    <script>
+      window.API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      window.VIEW_API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      console.log("API URL configured:", window.API_URL);
+    </script>
+    
+    <!-- Load utils.js for all pages -->
+    <script src="/SE-knowledges/assets/js/utils.js"></script>
+    
+    <!-- Page-specific scripts -->
+    
+    
+    
+      <!-- Article viewer scripts -->
+      <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
+      <script src="/SE-knowledges/assets/js/article-viewer.js"></script>
+      <script>
+        console.log("Article viewer scripts loaded");
+      </script>
+    
+    
+    
+    
+    
+    
+    <!-- Verify utils loaded -->
+    <script>
+      console.log("Utils loaded:", typeof parseApiResponse !== 'undefined');
+    </script>
   </body>
 </html>
 

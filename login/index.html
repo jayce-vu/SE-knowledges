@@ -7,21 +7,81 @@
     <link rel="icon" type="image/svg+xml" href="/SE-knowledges/assets/favicon.svg">
     <link rel="stylesheet" href="/SE-knowledges/assets/css/style.css">
     <style>
+        html, body {
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
         .login-container {
             max-width: 400px;
             margin: 100px auto;
             padding: 30px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 5px; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        .btn-block { width: 100%; padding: 10px; background: #2196F3; color: white; border: none; cursor: pointer; }
-        .btn-block:hover { background: #1976D2; }
-        .links { margin-top: 15px; text-align: center; font-size: 0.9em; }
-        .links a { color: #2196F3; cursor: pointer; }
+        .login-container h2 {
+            color: var(--text);
+            margin-bottom: 24px;
+        }
+        .form-group { 
+            margin-bottom: 20px; 
+        }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 8px; 
+            color: var(--text);
+            font-weight: 500;
+        }
+        .form-group input { 
+            width: 100%; 
+            padding: 12px 16px; 
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(255,255,255,0.07);
+        }
+        .form-group input::placeholder {
+            color: var(--muted);
+        }
+        .btn-block { 
+            width: 100%; 
+            padding: 12px; 
+            background: var(--accent);
+            color: #0b1020;
+            border: none; 
+            border-radius: 8px;
+            cursor: pointer; 
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .btn-block:hover { 
+            background: #6dd877;
+            transform: translateY(-1px);
+        }
+        .links { 
+            margin-top: 20px; 
+            text-align: center; 
+            font-size: 0.9em; 
+        }
+        .links a { 
+            color: var(--link); 
+            cursor: pointer; 
+            text-decoration: none;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -50,58 +110,10 @@
     </div>
 
     <script>
-        const API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
-        let isLogin = true;
-
-        document.getElementById("toggle-mode").addEventListener("click", () => {
-            isLogin = !isLogin;
-            document.getElementById("email-group").style.display = isLogin ? "none" : "block";
-            document.getElementById("btn-submit").textContent = isLogin ? "Login" : "Register";
-            document.querySelector("h2").textContent = isLogin ? "Admin Login" : "Admin Register";
-            document.getElementById("toggle-mode").textContent = isLogin ? "Need an account? Register" : "Have an account? Login";
-        });
-
-        document.getElementById("auth-form").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
-            const email = document.getElementById("email").value;
-            const btn = document.getElementById("btn-submit");
-
-            const endpoint = isLogin ? "/api/login" : "/api/register";
-            const payload = isLogin ? { username, password } : { username, password, email };
-
-            btn.disabled = true;
-            btn.textContent = "Processing...";
-
-            try {
-                const res = await fetch(`${API_URL}${endpoint}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-
-                if (res.ok) {
-                    if (isLogin) {
-                        localStorage.setItem("token", data.token);
-                        localStorage.setItem("user", JSON.stringify(data.user));
-                        window.location.href = "/admin.html";
-                    } else {
-                        alert("Registration successful! Please login.");
-                        window.location.reload();
-                    }
-                } else {
-                    alert("Error: " + (data.error || "Unknown error"));
-                }
-            } catch (err) {
-                console.error(err);
-                alert("System error");
-            } finally {
-                btn.disabled = false;
-                btn.textContent = isLogin ? "Login" : "Register";
-            }
-        });
+        window.API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+        window.VIEW_API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
     </script>
+    <script src="/SE-knowledges/assets/js/utils.js"></script>
+    <script src="/SE-knowledges/assets/js/auth.js"></script>
 </body>
 </html>

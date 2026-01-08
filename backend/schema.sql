@@ -74,13 +74,16 @@ CREATE TABLE IF NOT EXISTS comments (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
--- Bảng Post Views: Đếm view theo Slug (vì Slug nằm ở Translation)
--- Lưu ý: Nếu muốn đếm tổng view cho Article bất kể ngôn ngữ, có thể link article_id
+-- Bảng Post Views: Đếm view theo Article ID để tổng hợp view cho tất cả ngôn ngữ
+-- Một bài viết có thể có nhiều translations (vi, en) nhưng view count chung
 CREATE TABLE IF NOT EXISTS post_views (
-  slug TEXT PRIMARY KEY,
-  count INTEGER DEFAULT 0
+  article_id INTEGER PRIMARY KEY,
+  count INTEGER DEFAULT 0,
+  FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
 );
 
+-- Rate limits vẫn dùng slug để tránh spam theo từng ngôn ngữ
+-- (Người dùng có thể xem cả vi và en trong cùng 5 phút)
 CREATE TABLE IF NOT EXISTS rate_limits (
   ip TEXT,
   slug TEXT,

@@ -8,6 +8,7 @@
     </title>
     <link rel="icon" type="image/svg+xml" href="/SE-knowledges/assets/favicon.svg">
     <link rel="stylesheet" href="/SE-knowledges/assets/css/style.css" />
+    
   </head>
   <body>
     <header class="site">
@@ -30,7 +31,9 @@
       
       
       <!-- Auth Button (Hidden by default, JS toggles) -->
-      <a class="button" id="auth-btn" href="/SE-knowledges/login.html" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
+      <a class="button" id="auth-btn" href="/SE-knowledges/login/" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
+      <!-- New Post Button (Only visible when logged in) -->
+      <a class="button" id="new-post-btn" href="/SE-knowledges/admin/" style="margin-left: 10px; border: 1px solid #7ee787; background: rgba(126, 231, 135, 0.1); display: none;">+ New Post</a>
     </div>
   </div>
   
@@ -38,9 +41,16 @@
     document.addEventListener("DOMContentLoaded", () => {
       const token = localStorage.getItem("token");
       const authBtn = document.getElementById("auth-btn");
+      const newPostBtn = document.getElementById("new-post-btn");
+      
       if (token) {
+        // User is logged in
         authBtn.textContent = "Admin";
-        authBtn.href = "/SE-knowledges/admin.html";
+        authBtn.href = "/SE-knowledges/admin/";
+        newPostBtn.style.display = "inline-block";
+      } else {
+        // User is not logged in
+        newPostBtn.style.display = "none";
       }
     });
   </script>
@@ -51,39 +61,57 @@
 <meta name="pair-id" content="secure-storage-banking-analysis">
 
 
-<article class="panel">
-  <div class="post-meta">
-    2026-01-07
-    <span id="view-count-container" style="display:none">
-      · <span id="view-count">...</span> views
-    </span>
+<article class="post-article">
+  <!-- Post Header -->
+  <header class="post-header">
+    <h1 class="post-title">DETAILED ANALYSIS: BANKING GRADE SECURE STORAGE (ANDROID & iOS)</h1>
     
-      ·
-      
-        <span class="pill">android</span>
-      
-        <span class="pill">ios</span>
-      
-        <span class="pill">security</span>
-      
-        <span class="pill">banking</span>
-      
     
-  </div>
+    <p class="post-summary">Detailed analysis of Banking Grade Secure Storage on Android and iOS, including Android Keystore, iOS Keychain, Secure Enclave, and critical security standards.</p>
+    
 
-  <h1 style="margin-top: 6px;">DETAILED ANALYSIS: BANKING GRADE SECURE STORAGE (ANDROID & iOS)</h1>
-  
-    <p class="post-meta">Detailed analysis of Banking Grade Secure Storage on Android and iOS, including Android Keystore, iOS Keychain, Secure Enclave, and critical security standards.</p>
-  
+    <div class="post-meta">
+      <span class="post-date">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        January 07, 2026
+      </span>
+      
+      <span id="view-count-container" class="post-views" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+        <span id="view-count">0</span> views
+      </span>
 
-  
+      
+      <div class="post-tags">
+        
+          <span class="tag-pill">android</span>
+        
+          <span class="tag-pill">ios</span>
+        
+          <span class="tag-pill">security</span>
+        
+          <span class="tag-pill">banking</span>
+        
+      </div>
+      
+    </div>
+
     
       
+        
+        
       
     
-  
+  </header>
 
-  <div>
+  <!-- Post Content -->
+  <div class="post-content">
     <h2 id="context">Context</h2>
 
 <p>In banking application development, data security is vital. One of the most important questions from Auditors is: “How is sensitive data (tokens, keys) stored?”. This article provides a detailed analysis of Banking Grade Secure Storage on both Android and iOS platforms.</p>
@@ -372,18 +400,36 @@ Token is bound to:</p>
   </div>
 </article>
 
+<!-- Highlight.js for syntax highlighting -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
 <script>
   window.VIEW_API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+  
+  // Apply syntax highlighting to code blocks after page load
+  document.addEventListener("DOMContentLoaded", () => {
+    if (typeof hljs !== 'undefined') {
+      document.querySelectorAll('.post-content pre code').forEach((block) => {
+        hljs.highlightElement(block);
+      });
+    }
+  });
 </script>
 <script src="/SE-knowledges/assets/js/view-count.js"></script>
 
-<div style="height: 16px;"></div>
-
-<div class="panel">
+<!-- Back Button -->
+<nav class="post-navigation">
   
-    <a href="/SE-knowledges/en/">← Back to list</a>
+    <a href="/SE-knowledges/en/" class="back-link">
   
-</div>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    
+      Back to list
+    
+  </a>
+</nav>
 
 
     </main>
@@ -403,6 +449,30 @@ Token is bound to:</p>
 </footer>
 
 
+    
+    <!-- Global API Configuration -->
+    <script>
+      window.API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      window.VIEW_API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      console.log("API URL configured:", window.API_URL);
+    </script>
+    
+    <!-- Load utils.js for all pages -->
+    <script src="/SE-knowledges/assets/js/utils.js"></script>
+    
+    <!-- Page-specific scripts -->
+    
+    
+    
+    
+    
+    
+    
+    
+    <!-- Verify utils loaded -->
+    <script>
+      console.log("Utils loaded:", typeof parseApiResponse !== 'undefined');
+    </script>
   </body>
 </html>
 
