@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     initTabs();
+    initPreview();
     loadTopics();
     loadPosts();
 
@@ -28,6 +29,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Setup paste formatting for markdown editors
     setupPasteFormatting();
+    
+    // Setup markdown toolbar
+    initMarkdownToolbar();
+    
+    // Setup fullscreen editor
+    initFullscreenEditor();
 });
 
 // --- Tabs Logic ---
@@ -45,6 +52,90 @@ function initTabs() {
             document.querySelector(`.tab-content[data-lang="${lang}"]`).classList.add("active");
         });
     });
+}
+
+// --- Preview Logic ---
+function initPreview() {
+    // Configure marked.js
+    if (typeof marked !== 'undefined') {
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: true,
+            mangle: false
+        });
+    }
+
+    // Preview toggle buttons
+    document.querySelectorAll('.btn-preview-toggle').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.getAttribute('data-lang');
+            togglePreview(lang);
+        });
+    });
+
+    // Real-time preview on input
+    ['vi', 'en'].forEach(lang => {
+        const editor = document.getElementById(`content-${lang}`);
+        if (editor) {
+            editor.addEventListener('input', () => {
+                updatePreview(lang);
+            });
+        }
+    });
+}
+
+function togglePreview(lang) {
+    const editor = document.getElementById(`content-${lang}`);
+    const preview = document.getElementById(`preview-${lang}`);
+    const wrapper = editor?.closest('.editor-wrapper');
+    const btn = document.querySelector(`.btn-preview-toggle[data-lang="${lang}"]`);
+    
+    if (!editor || !preview || !wrapper) return;
+
+    const isPreviewVisible = preview.style.display !== 'none';
+    
+    if (isPreviewVisible) {
+        // Hide preview, show editor only
+        preview.style.display = 'none';
+        editor.style.display = 'block';
+        editor.style.width = '100%';
+        wrapper.classList.remove('split-view');
+        btn?.classList.remove('active');
+        btn.textContent = `👁️ Preview ${lang.toUpperCase()}`;
+    } else {
+        // Show preview
+        preview.style.display = 'block';
+        editor.style.display = 'block';
+        editor.style.width = '50%';
+        preview.style.width = '50%';
+        wrapper.classList.add('split-view');
+        btn?.classList.add('active');
+        btn.textContent = `✏️ Edit ${lang.toUpperCase()}`;
+        updatePreview(lang);
+    }
+}
+
+function updatePreview(lang) {
+    const editor = document.getElementById(`content-${lang}`);
+    const preview = document.getElementById(`preview-${lang}`);
+    
+    if (!editor || !preview) return;
+    
+    const markdown = editor.value;
+    
+    if (typeof marked !== 'undefined') {
+        preview.innerHTML = marked.parse(markdown || '*No content yet*');
+        
+        // Apply syntax highlighting if highlight.js is available
+        if (typeof hljs !== 'undefined') {
+            preview.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+        }
+    } else {
+        preview.textContent = markdown || 'No content yet';
+    }
 }
 
 // --- Data Loading ---
@@ -410,4 +501,381 @@ function formatPlainTextToMarkdown(text) {
     formatted = formatted.replace(/^([•\-\*])\s+(.+)$/gm, '- $2');
     
     return formatted;
+}
+
+// --- Markdown Toolbar ---
+function initMarkdownToolbar() {
+    document.querySelectorAll('.markdown-toolbar').forEach(toolbar => {
+        const editorId = toolbar.getAttribute('data-editor');
+        const editor = document.getElementById(editorId);
+        
+        if (!editor) return;
+        
+        // Add click handlers to all toolbar buttons
+        toolbar.querySelectorAll('.toolbar-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const action = btn.getAttribute('data-action');
+                handleToolbarAction(action, editor);
+            });
+        });
+        
+        // Keyboard shortcuts
+        editor.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'b') {
+                    e.preventDefault();
+                    handleToolbarAction('bold', editor);
+                } else if (e.key === 'i') {
+                    e.preventDefault();
+                    handleToolbarAction('italic', editor);
+                }
+            }
+        });
+    });
+}
+
+function handleToolbarAction(action, editor) {
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    const text = editor.value;
+    const selectedText = text.substring(start, end);
+    
+    let insertText = '';
+    let newCursorPos = start;
+    
+    switch(action) {
+        case 'bold':
+            if (selectedText) {
+                insertText = `**${selectedText}**`;
+                newCursorPos = start + insertText.length;
+            } else {
+                insertText = '**bold text**';
+                newCursorPos = start + 2;
+            }
+            break;
+            
+        case 'italic':
+            if (selectedText) {
+                insertText = `*${selectedText}*`;
+                newCursorPos = start + insertText.length;
+            } else {
+                insertText = '*italic text*';
+                newCursorPos = start + 1;
+            }
+            break;
+            
+        case 'heading':
+            const level = prompt('Enter heading level (1-6):', '2');
+            if (level && level >= 1 && level <= 6) {
+                const prefix = '#'.repeat(parseInt(level)) + ' ';
+                if (selectedText) {
+                    insertText = prefix + selectedText;
+                    newCursorPos = start + insertText.length;
+                } else {
+                    insertText = prefix;
+                    newCursorPos = start + insertText.length;
+                }
+            } else {
+                return;
+            }
+            break;
+            
+        case 'link':
+            const linkText = selectedText || prompt('Link text:', 'link text');
+            if (linkText === null) return;
+            const linkUrl = prompt('Link URL:', 'https://');
+            if (linkUrl === null) return;
+            insertText = `[${linkText}](${linkUrl})`;
+            newCursorPos = start + insertText.length;
+            break;
+            
+        case 'image':
+            const altText = prompt('Image alt text:', '');
+            if (altText === null) return;
+            const imageUrl = prompt('Image URL:', 'https://');
+            if (imageUrl === null) return;
+            insertText = `![${altText}](${imageUrl})`;
+            newCursorPos = start + insertText.length;
+            break;
+            
+        case 'code':
+            if (selectedText) {
+                insertText = `\`${selectedText}\``;
+                newCursorPos = start + insertText.length;
+            } else {
+                const lang = prompt('Code language (optional):', '');
+                insertText = lang ? `\`\`\`${lang}\n\n\`\`\`` : '```\n\n```';
+                newCursorPos = start + (lang ? lang.length + 5 : 4);
+            }
+            break;
+            
+        case 'quote':
+            if (selectedText) {
+                const lines = selectedText.split('\n');
+                insertText = lines.map(line => `> ${line}`).join('\n');
+                newCursorPos = start + insertText.length;
+            } else {
+                insertText = '> ';
+                newCursorPos = start + 2;
+            }
+            break;
+            
+        case 'list':
+            if (selectedText) {
+                const lines = selectedText.split('\n');
+                insertText = lines.map(line => line.trim() ? `- ${line.trim()}` : '').join('\n');
+                newCursorPos = start + insertText.length;
+            } else {
+                insertText = '- ';
+                newCursorPos = start + 2;
+            }
+            break;
+            
+        case 'listOrdered':
+            if (selectedText) {
+                const lines = selectedText.split('\n').filter(l => l.trim());
+                insertText = lines.map((line, i) => `${i + 1}. ${line.trim()}`).join('\n');
+                newCursorPos = start + insertText.length;
+            } else {
+                insertText = '1. ';
+                newCursorPos = start + 3;
+            }
+            break;
+            
+        case 'indent':
+            if (selectedText) {
+                const lines = selectedText.split('\n');
+                insertText = lines.map(line => line.trim() ? '    ' + line : line).join('\n');
+                newCursorPos = start + insertText.length;
+            } else {
+                // Get current line
+                const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+                const lineEnd = text.indexOf('\n', start);
+                const currentLine = text.substring(lineStart, lineEnd === -1 ? text.length : lineEnd);
+                insertText = '    ' + currentLine;
+                editor.value = text.substring(0, lineStart) + insertText + text.substring(lineEnd === -1 ? text.length : lineEnd);
+                newCursorPos = start + 4;
+                editor.setSelectionRange(newCursorPos, newCursorPos);
+                editor.dispatchEvent(new Event('input', { bubbles: true }));
+                return;
+            }
+            break;
+            
+        case 'outdent':
+            if (selectedText) {
+                const lines = selectedText.split('\n');
+                insertText = lines.map(line => {
+                    if (line.startsWith('    ')) {
+                        return line.substring(4);
+                    } else if (line.startsWith('\t')) {
+                        return line.substring(1);
+                    }
+                    return line;
+                }).join('\n');
+                newCursorPos = start + insertText.length;
+            } else {
+                // Get current line
+                const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+                const lineEnd = text.indexOf('\n', start);
+                const currentLine = text.substring(lineStart, lineEnd === -1 ? text.length : lineEnd);
+                if (currentLine.startsWith('    ')) {
+                    insertText = currentLine.substring(4);
+                    editor.value = text.substring(0, lineStart) + insertText + text.substring(lineEnd === -1 ? text.length : lineEnd);
+                    newCursorPos = start - 4;
+                    editor.setSelectionRange(newCursorPos, newCursorPos);
+                    editor.dispatchEvent(new Event('input', { bubbles: true }));
+                    return;
+                } else {
+                    return;
+                }
+            }
+            break;
+            
+        case 'hr':
+            insertText = '\n---\n';
+            newCursorPos = start + insertText.length;
+            break;
+            
+        default:
+            return;
+    }
+    
+    // Insert text
+    editor.value = text.substring(0, start) + insertText + text.substring(end);
+    
+    // Set cursor position
+    editor.setSelectionRange(newCursorPos, newCursorPos);
+    editor.focus();
+    
+    // Trigger input event for preview update
+    editor.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+// --- Fullscreen Editor ---
+function initFullscreenEditor() {
+    // Clone toolbar for fullscreen
+    const originalToolbar = document.querySelector('.markdown-toolbar');
+    if (originalToolbar) {
+        const fullscreenToolbar = document.getElementById('fullscreen-toolbar');
+        if (fullscreenToolbar) {
+            fullscreenToolbar.innerHTML = originalToolbar.innerHTML;
+            // Re-attach event handlers
+            fullscreenToolbar.querySelectorAll('.toolbar-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const action = btn.getAttribute('data-action');
+                    const editor = document.getElementById('fullscreen-editor');
+                    if (editor) {
+                        handleToolbarAction(action, editor);
+                    }
+                });
+            });
+        }
+    }
+    
+    // Expand buttons
+    document.querySelectorAll('.btn-expand-editor').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const editorId = btn.getAttribute('data-editor');
+            const previewId = btn.getAttribute('data-preview');
+            openFullscreenEditor(editorId, previewId);
+        });
+    });
+    
+    // Close button
+    const closeBtn = document.querySelector('.btn-close-fullscreen');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeFullscreenEditor);
+    }
+    
+    // ESC key to close
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('fullscreen-editor-modal');
+            if (modal && modal.style.display !== 'none') {
+                closeFullscreenEditor();
+            }
+        }
+    });
+    
+    // Toggle split view
+    const toggleSplitBtn = document.querySelector('.btn-toggle-split');
+    if (toggleSplitBtn) {
+        toggleSplitBtn.addEventListener('click', () => {
+            const content = document.querySelector('.fullscreen-content');
+            if (content) {
+                if (content.classList.contains('preview-only')) {
+                    content.classList.remove('preview-only');
+                    content.classList.add('split-view');
+                } else if (content.classList.contains('split-view')) {
+                    content.classList.remove('split-view');
+                    content.classList.add('editor-only');
+                } else {
+                    content.classList.remove('editor-only');
+                    content.classList.add('split-view');
+                }
+            }
+        });
+    }
+    
+    // Live preview update
+    const fullscreenEditor = document.getElementById('fullscreen-editor');
+    if (fullscreenEditor) {
+        fullscreenEditor.addEventListener('input', () => {
+            updateFullscreenPreview();
+        });
+    }
+}
+
+function openFullscreenEditor(editorId, previewId) {
+    const editor = document.getElementById(editorId);
+    const preview = document.getElementById(previewId);
+    const modal = document.getElementById('fullscreen-editor-modal');
+    const fullscreenEditor = document.getElementById('fullscreen-editor');
+    const fullscreenPreview = document.getElementById('fullscreen-preview');
+    const title = document.getElementById('fullscreen-title');
+    
+    if (!editor || !modal || !fullscreenEditor || !fullscreenPreview) return;
+    
+    // Copy content to fullscreen editor
+    fullscreenEditor.value = editor.value;
+    
+    // Update title
+    if (title) {
+        const lang = editorId.includes('vi') ? 'Tiếng Việt' : 'English';
+        title.textContent = `Editor & Preview - ${lang}`;
+    }
+    
+    // Show modal
+    modal.style.display = 'flex';
+    
+    // Update preview
+    updateFullscreenPreview();
+    
+    // Focus editor
+    setTimeout(() => {
+        fullscreenEditor.focus();
+        // Restore cursor position if possible
+        const cursorPos = editor.selectionStart;
+        fullscreenEditor.setSelectionRange(cursorPos, cursorPos);
+    }, 100);
+    
+    // Sync back to original editor on input
+    fullscreenEditor.addEventListener('input', syncToOriginalEditor);
+    function syncToOriginalEditor() {
+        editor.value = fullscreenEditor.value;
+        // Also update preview in main view if visible
+        if (preview && preview.style.display !== 'none') {
+            updatePreview(editorId.includes('vi') ? 'vi' : 'en');
+        }
+    }
+    
+    // Store sync function for cleanup
+    fullscreenEditor._syncHandler = syncToOriginalEditor;
+}
+
+function closeFullscreenEditor() {
+    const modal = document.getElementById('fullscreen-editor-modal');
+    const fullscreenEditor = document.getElementById('fullscreen-editor');
+    
+    if (!modal || !fullscreenEditor) return;
+    
+    // Remove sync handler
+    if (fullscreenEditor._syncHandler) {
+        fullscreenEditor.removeEventListener('input', fullscreenEditor._syncHandler);
+        delete fullscreenEditor._syncHandler;
+    }
+    
+    // Hide modal
+    modal.style.display = 'none';
+    
+    // Reset split view
+    const content = document.querySelector('.fullscreen-content');
+    if (content) {
+        content.classList.remove('editor-only', 'preview-only');
+        content.classList.add('split-view');
+    }
+}
+
+function updateFullscreenPreview() {
+    const fullscreenEditor = document.getElementById('fullscreen-editor');
+    const fullscreenPreview = document.getElementById('fullscreen-preview');
+    
+    if (!fullscreenEditor || !fullscreenPreview) return;
+    
+    const markdown = fullscreenEditor.value;
+    
+    if (typeof marked !== 'undefined') {
+        fullscreenPreview.innerHTML = marked.parse(markdown || '*No content yet*');
+        
+        // Apply syntax highlighting if highlight.js is available
+        if (typeof hljs !== 'undefined') {
+            fullscreenPreview.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+        }
+    } else {
+        fullscreenPreview.textContent = markdown || 'No content yet';
+    }
 }

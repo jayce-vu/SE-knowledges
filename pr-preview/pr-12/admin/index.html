@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="/SE-knowledges/pr-preview/pr-12/assets/css/admin.css">
     <!-- Marked.js for Markdown Preview -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
 </head>
 <body>
     <div class="admin-container">
@@ -65,6 +68,10 @@
                         <div class="tabs-header">
                             <button type="button" class="tab-btn active" data-lang="vi">Tiếng Việt (VI)</button>
                             <button type="button" class="tab-btn" data-lang="en">English (EN)</button>
+                            <div style="margin-left: auto; display: flex; gap: 8px;">
+                                <button type="button" class="btn-preview-toggle" data-lang="vi">👁️ Preview VI</button>
+                                <button type="button" class="btn-preview-toggle" data-lang="en">👁️ Preview EN</button>
+                            </div>
                         </div>
 
                         <!-- Vietnamese Content -->
@@ -82,8 +89,59 @@
                                 <textarea id="excerpt-vi" rows="3"></textarea>
                             </div>
                             <div class="form-group">
-                                <label>Nội dung (Markdown)</label>
-                                <textarea id="content-vi" class="markdown-editor" rows="15"></textarea>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <label style="margin: 0;">Nội dung (Markdown)</label>
+                                    <button type="button" class="btn-expand-editor" data-editor="content-vi" data-preview="preview-vi" title="Mở rộng để so sánh Editor & Preview">
+                                        ⛶ Mở rộng
+                                    </button>
+                                </div>
+                                <div class="markdown-toolbar" data-editor="content-vi">
+                                    <button type="button" class="toolbar-btn" data-action="bold" title="Bold (Ctrl+B)">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="italic" title="Italic (Ctrl+I)">
+                                        <em>I</em>
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="heading" title="Heading">
+                                        H<sub>1</sub>
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="link" title="Insert Link">
+                                        🔗
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="image" title="Insert Image">
+                                        🖼️
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="code" title="Code Block">
+                                        &lt;/&gt;
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="quote" title="Blockquote">
+                                        "
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="list" title="Unordered List">
+                                        •
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="listOrdered" title="Ordered List">
+                                        1.
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="indent" title="Indent">
+                                        →
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="outdent" title="Outdent">
+                                        ←
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="hr" title="Horizontal Rule">
+                                        ─
+                                    </button>
+                                </div>
+                                <div class="editor-wrapper">
+                                    <textarea id="content-vi" class="markdown-editor" rows="15"></textarea>
+                                    <div id="preview-vi" class="markdown-preview" style="display: none;"></div>
+                                </div>
                             </div>
                         </div>
 
@@ -102,13 +160,87 @@
                                 <textarea id="excerpt-en" rows="3"></textarea>
                             </div>
                             <div class="form-group">
-                                <label>Content (Markdown)</label>
-                                <textarea id="content-en" class="markdown-editor" rows="15"></textarea>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <label style="margin: 0;">Content (Markdown)</label>
+                                    <button type="button" class="btn-expand-editor" data-editor="content-en" data-preview="preview-en" title="Expand to compare Editor & Preview">
+                                        ⛶ Expand
+                                    </button>
+                                </div>
+                                <div class="markdown-toolbar" data-editor="content-en">
+                                    <button type="button" class="toolbar-btn" data-action="bold" title="Bold (Ctrl+B)">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="italic" title="Italic (Ctrl+I)">
+                                        <em>I</em>
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="heading" title="Heading">
+                                        H<sub>1</sub>
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="link" title="Insert Link">
+                                        🔗
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="image" title="Insert Image">
+                                        🖼️
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="code" title="Code Block">
+                                        &lt;/&gt;
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="quote" title="Blockquote">
+                                        "
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="list" title="Unordered List">
+                                        •
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="listOrdered" title="Ordered List">
+                                        1.
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="indent" title="Indent">
+                                        →
+                                    </button>
+                                    <button type="button" class="toolbar-btn" data-action="outdent" title="Outdent">
+                                        ←
+                                    </button>
+                                    <div class="toolbar-divider"></div>
+                                    <button type="button" class="toolbar-btn" data-action="hr" title="Horizontal Rule">
+                                        ─
+                                    </button>
+                                </div>
+                                <div class="editor-wrapper">
+                                    <textarea id="content-en" class="markdown-editor" rows="15"></textarea>
+                                    <div id="preview-en" class="markdown-preview" style="display: none;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </form>
             </main>
+        </div>
+    </div>
+
+    <!-- Fullscreen Editor Modal -->
+    <div id="fullscreen-editor-modal" class="fullscreen-modal" style="display: none;">
+        <div class="fullscreen-header">
+            <h3 id="fullscreen-title">Editor & Preview</h3>
+            <button type="button" class="btn-close-fullscreen" title="Đóng (Esc)">✕</button>
+        </div>
+        <div class="fullscreen-content split-view">
+            <div class="fullscreen-editor-panel">
+                <div class="fullscreen-toolbar">
+                    <div class="markdown-toolbar" id="fullscreen-toolbar"></div>
+                </div>
+                <textarea id="fullscreen-editor" class="fullscreen-textarea"></textarea>
+            </div>
+            <div class="fullscreen-preview-panel">
+                <div class="fullscreen-preview-header">
+                    <span>Preview</span>
+                    <button type="button" class="btn-toggle-split" title="Toggle Split View">⇄</button>
+                </div>
+                <div id="fullscreen-preview" class="fullscreen-preview-content"></div>
+            </div>
         </div>
     </div>
 
