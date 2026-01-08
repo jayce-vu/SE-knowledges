@@ -6,6 +6,7 @@
     <title>
       Tiếng Việt · SE-knowledges
     </title>
+    <link rel="icon" type="image/svg+xml" href="/SE-knowledges/assets/favicon.svg">
     <link rel="stylesheet" href="/SE-knowledges/assets/css/style.css" />
   </head>
   <body>
@@ -27,8 +28,22 @@
         <a class="button" href="/SE-knowledges/en/">English</a>
         <a class="button" href="/SE-knowledges/vi/">Tiếng Việt</a>
       
+      
+      <!-- Auth Button (Hidden by default, JS toggles) -->
+      <a class="button" id="auth-btn" href="/SE-knowledges/login.html" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
     </div>
   </div>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem("token");
+      const authBtn = document.getElementById("auth-btn");
+      if (token) {
+        authBtn.textContent = "Admin";
+        authBtn.href = "/SE-knowledges/admin.html";
+      }
+    });
+  </script>
 </header>
 
     <main class="wrap">
