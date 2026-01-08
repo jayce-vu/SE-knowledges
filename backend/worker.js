@@ -315,86 +315,93 @@ export default {
 
       // POST /api/admin/articles - Create/Update Article with multiple translations
       if (path === "/api/admin/articles" && request.method === "POST") {
-        const authHeader = request.headers.get("Authorization");
-        const user = await getCurrentUser(authHeader);
+        try {
+          const authHeader = request.headers.get("Authorization");
+          const user = await getCurrentUser(authHeader);
+          
+          if (!user) return error("Unauthorized", 401);
+
+          const body = await safeJsonParse(request);
+          if (!body) return error("Invalid JSON body", 400);
+
+          const { id, topic_id, thumbnail_url, is_published, tags, translations } = body;
+          
+          // Use current user's ID as author_id (prevent user from creating articles for others)
+          const author_id = user.id; 
         
-        if (!user) return error("Unauthorized", 401);
-
-        const body = await safeJsonParse(request);
-        if (!body) return error("Invalid JSON body", 400);
-
-        const { id, topic_id, thumbnail_url, is_published, tags, translations } = body;
-        
-        // Use current user's ID as author_id (prevent user from creating articles for others)
-        const author_id = user.id; 
-        
-        // Validation
-        if (!translations || !Array.isArray(translations) || translations.length === 0) {
-            return error("At least one translation is required");
-        }
-
-        // Validate each translation
-        for (const t of translations) {
-          const transValidation = validateRequired(t, ["language", "slug", "title"]);
-          if (!transValidation.valid) {
-            return error(transValidation.error);
+          // Validation
+          if (!translations || !Array.isArray(translations) || translations.length === 0) {
+              return error("At least one translation is required");
           }
-          if (!validateSlug(t.slug)) {
-            return error(`Invalid slug format: ${t.slug}`, 400);
+
+          // Validate each translation
+          for (const t of translations) {
+            const transValidation = validateRequired(t, ["language", "slug", "title"]);
+            if (!transValidation.valid) {
+              return error(transValidation.error);
+            }
+            if (!validateSlug(t.slug)) {
+              return error(`Invalid slug format: ${t.slug}`, 400);
+            }
+            if (!["vi", "en"].includes(t.language)) {
+              return error(`Invalid language: ${t.language}. Must be 'vi' or 'en'`, 400);
+            }
           }
-          if (!["vi", "en"].includes(t.language)) {
-            return error(`Invalid language: ${t.language}. Must be 'vi' or 'en'`, 400);
+
+          const now = Math.floor(Date.now() / 1000);
+          let articleId = id ? parseInt(id) : null;
+          const isUpdate = !!articleId;
+
+          // Transaction
+          // 1. Create or Update Article Parent
+          if (!articleId) {
+              const result = await env.DB.prepare(
+                  `INSERT INTO articles (topic_id, author_id, thumbnail_url, is_published, created_at, updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?)`
+              ).bind(topic_id || null, author_id, thumbnail_url || null, is_published ? 1 : 0, now, now).run();
+              articleId = result.meta.last_row_id;
+          } else {
+              // Check ownership before update
+              const existingArticle = await env.DB.prepare("SELECT author_id FROM articles WHERE id = ?").bind(articleId).first();
+              if (!existingArticle) return error("Article not found", 404);
+              if (existingArticle.author_id !== user.id) return error("Access denied: You can only edit your own articles", 403);
+              
+              await env.DB.prepare(
+                  `UPDATE articles SET topic_id=?, thumbnail_url=?, is_published=?, updated_at=? WHERE id=? AND author_id=?`
+              ).bind(topic_id || null, thumbnail_url || null, is_published ? 1 : 0, now, articleId, user.id).run();
           }
+
+          // 2. Upsert Translations
+          const stmts = [];
+          for (const t of translations) {
+               stmts.push(env.DB.prepare(
+                   `INSERT INTO article_translations (article_id, language, slug, title, content, excerpt, meta_description, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(article_id, language) DO UPDATE SET
+                    slug=excluded.slug, title=excluded.title, content=excluded.content, excerpt=excluded.excerpt, meta_description=excluded.meta_description, updated_at=excluded.updated_at`
+               ).bind(articleId, t.language, t.slug, t.title, t.content || null, t.excerpt || null, t.meta_description || null, now));
+          }
+
+          // 3. Update Tags
+          if (tags && Array.isArray(tags)) {
+               stmts.push(env.DB.prepare("DELETE FROM article_tags WHERE article_id = ?").bind(articleId));
+               for (const tagId of tags) {
+                   if (typeof tagId === "number") {
+                     stmts.push(env.DB.prepare("INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)").bind(articleId, tagId));
+                   }
+               }
+          }
+
+          await env.DB.batch(stmts);
+
+          // Return appropriate status code: 201 for create, 200 for update
+          return json({ success: true, id: articleId }, isUpdate ? 200 : 201);
+        } catch (e) {
+          // Log error for debugging
+          console.error("Error in POST /api/admin/articles:", e);
+          console.error("Error stack:", e.stack);
+          return error(`Server error: ${e.message}`, 500);
         }
-
-        const now = Math.floor(Date.now() / 1000);
-        let articleId = id;
-        const isUpdate = !!articleId;
-
-        // Transaction
-        // 1. Create or Update Article Parent
-        if (!articleId) {
-            const result = await env.DB.prepare(
-                `INSERT INTO articles (topic_id, author_id, thumbnail_url, is_published, created_at, updated_at)
-                 VALUES (?, ?, ?, ?, ?, ?)`
-            ).bind(topic_id, author_id, thumbnail_url, is_published ? 1 : 0, now, now).run();
-            articleId = result.meta.last_row_id;
-        } else {
-            // Check ownership before update
-            const existingArticle = await env.DB.prepare("SELECT author_id FROM articles WHERE id = ?").bind(articleId).first();
-            if (!existingArticle) return error("Article not found", 404);
-            if (existingArticle.author_id !== user.id) return error("Access denied: You can only edit your own articles", 403);
-            
-            await env.DB.prepare(
-                `UPDATE articles SET topic_id=?, thumbnail_url=?, is_published=?, updated_at=? WHERE id=? AND author_id=?`
-            ).bind(topic_id, thumbnail_url, is_published ? 1 : 0, now, articleId, user.id).run();
-        }
-
-        // 2. Upsert Translations
-        const stmts = [];
-        for (const t of translations) {
-             stmts.push(env.DB.prepare(
-                 `INSERT INTO article_translations (article_id, language, slug, title, content, excerpt, meta_description, updated_at)
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                  ON CONFLICT(article_id, language) DO UPDATE SET
-                  slug=excluded.slug, title=excluded.title, content=excluded.content, excerpt=excluded.excerpt, meta_description=excluded.meta_description, updated_at=excluded.updated_at`
-             ).bind(articleId, t.language, t.slug, t.title, t.content || null, t.excerpt || null, t.meta_description || null, now));
-        }
-
-        // 3. Update Tags
-        if (tags && Array.isArray(tags)) {
-             stmts.push(env.DB.prepare("DELETE FROM article_tags WHERE article_id = ?").bind(articleId));
-             for (const tagId of tags) {
-                 if (typeof tagId === "number") {
-                   stmts.push(env.DB.prepare("INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)").bind(articleId, tagId));
-                 }
-             }
-        }
-
-        await env.DB.batch(stmts);
-
-        // Return appropriate status code: 201 for create, 200 for update
-        return json({ success: true, id: articleId }, isUpdate ? 200 : 201);
       }
 
       // Common endpoints
