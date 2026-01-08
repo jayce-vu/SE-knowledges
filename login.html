@@ -53,58 +53,10 @@ layout: null
     </div>
 
     <script>
-        const API_URL = "{{ site.view_api_url }}";
-        let isLogin = true;
-
-        document.getElementById("toggle-mode").addEventListener("click", () => {
-            isLogin = !isLogin;
-            document.getElementById("email-group").style.display = isLogin ? "none" : "block";
-            document.getElementById("btn-submit").textContent = isLogin ? "Login" : "Register";
-            document.querySelector("h2").textContent = isLogin ? "Admin Login" : "Admin Register";
-            document.getElementById("toggle-mode").textContent = isLogin ? "Need an account? Register" : "Have an account? Login";
-        });
-
-        document.getElementById("auth-form").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
-            const email = document.getElementById("email").value;
-            const btn = document.getElementById("btn-submit");
-
-            const endpoint = isLogin ? "/api/login" : "/api/register";
-            const payload = isLogin ? { username, password } : { username, password, email };
-
-            btn.disabled = true;
-            btn.textContent = "Processing...";
-
-            try {
-                const res = await fetch(`${API_URL}${endpoint}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-
-                if (res.ok) {
-                    if (isLogin) {
-                        localStorage.setItem("token", data.token);
-                        localStorage.setItem("user", JSON.stringify(data.user));
-                        window.location.href = "/admin.html";
-                    } else {
-                        alert("Registration successful! Please login.");
-                        window.location.reload();
-                    }
-                } else {
-                    alert("Error: " + (data.error || "Unknown error"));
-                }
-            } catch (err) {
-                console.error(err);
-                alert("System error");
-            } finally {
-                btn.disabled = false;
-                btn.textContent = isLogin ? "Login" : "Register";
-            }
-        });
+        window.API_URL = "{{ site.view_api_url }}";
+        window.VIEW_API_URL = "{{ site.view_api_url }}";
     </script>
+    <script src="{{ '/assets/js/utils.js' | relative_url }}"></script>
+    <script src="{{ '/assets/js/auth.js' | relative_url }}"></script>
 </body>
 </html>

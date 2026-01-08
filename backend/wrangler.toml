@@ -1,0 +1,25 @@
+name = "post-views"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# D1 Database binding
+# Sau khi tạo D1 database trên Cloudflare Dashboard hoặc bằng CLI:
+# wrangler d1 create blog-views-db
+# Copy database_id từ output và paste vào đây
+[[d1_databases]]
+binding = "DB"  # Tên biến này phải khớp với code trong worker.js (env.DB)
+database_name = "blog-views-db"
+database_id = "YOUR_D1_DATABASE_ID"  # Thay bằng ID thực tế của bạn
+
+# Hoặc nếu muốn dùng preview database cho development:
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "blog-views-db"
+# preview_database_id = "YOUR_PREVIEW_D1_DATABASE_ID"
+
+# Environment Variables
+# Có thể set trong Cloudflare Dashboard hoặc dùng wrangler secret put
+# [vars]
+# ENVIRONMENT = "production"  # "development" hoặc "production"
+# ALLOWED_ORIGIN = "https://yourdomain.com"  # CORS origin, mặc định "*"
+

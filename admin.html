@@ -117,7 +117,9 @@ layout: null
 
     <script>
         window.API_URL = "{{ site.view_api_url }}";
+        window.VIEW_API_URL = "{{ site.view_api_url }}";
     </script>
+    <script src="{{ '/assets/js/utils.js' | relative_url }}"></script>
     <script src="{{ '/assets/js/admin.js' | relative_url }}"></script>
 </body>
 </html>

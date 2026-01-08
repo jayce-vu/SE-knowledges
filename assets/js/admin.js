@@ -1,6 +1,5 @@
-// Config - In real app, load this from env or config file
-// Ensure this matches your _config.yml or deployed worker URL
-const API_URL = window.API_URL || "https://post-views.jayce-it-work.workers.dev"; 
+// Config - Load from Jekyll config or window variable
+const API_URL = window.API_URL || window.VIEW_API_URL || ""; 
 
 document.addEventListener("DOMContentLoaded", function() {
     // Check Auth
@@ -70,20 +69,33 @@ async function loadPosts() {
         
         // Fetch all articles (default VI view for list)
         const res = await fetch(`${API_URL}/api/articles?lang=vi`);
-        const posts = await res.json();
+        if (!res.ok) {
+            throw new Error("Failed to fetch articles");
+        }
+        
+        const postsData = await res.json();
+        // Parse API response (handle both old and new format)
+        const { data: posts } = parseApiResponse(postsData);
         
         list.innerHTML = "";
+        if (posts.length === 0) {
+            list.innerHTML = '<li>No articles found. Create your first article!</li>';
+            return;
+        }
+        
         posts.forEach(p => {
             const li = document.createElement("li");
             li.innerHTML = `
-                <strong>${p.title}</strong>
-                <div class="post-status">${new Date(p.created_at * 1000).toLocaleDateString()}</div>
+                <strong>${escapeHtml(p.title)}</strong>
+                <div class="post-status">${formatDate(p.created_at)}</div>
             `;
-            li.addEventListener("click", () => loadPostDetails(p.id || p.slug)); // Note: API returns ID joined
+            li.addEventListener("click", () => loadPostDetails(p.id || p.slug));
             list.appendChild(li);
         });
     } catch (e) {
         console.error("Error loading posts", e);
+        const list = document.getElementById("post-list");
+        list.innerHTML = '<li class="error">Error loading posts. Please refresh.</li>';
     }
 }
 
@@ -174,10 +186,18 @@ async function savePost() {
         // TODO: Implement "Create Tag" logic.
         const tags = []; 
 
+        // Get author_id from current user
+        const user = getCurrentUser();
+        if (!user || !user.id) {
+            alert("Error: User not logged in. Please login again.");
+            window.location.href = "/login.html";
+            return;
+        }
+
         const payload = {
             id: id ? parseInt(id) : null,
             topic_id: topic_id ? parseInt(topic_id) : null,
-            author_id: 1, // Hardcoded for now
+            author_id: user.id, // Get from logged in user
             thumbnail_url,
             is_published,
             tags,
@@ -196,11 +216,11 @@ async function savePost() {
         const result = await res.json();
         
         if (res.ok) {
-            alert("Saved successfully!");
+            showSuccess("Saved successfully!", "post-list");
             loadPosts(); // Refresh list
             if (!id) document.getElementById("post-id").value = result.id;
         } else {
-            alert("Error: " + (result.error || "Unknown error"));
+            showError(result.error || "Unknown error", "post-list");
         }
 
     } catch (e) {
@@ -217,14 +237,8 @@ function resetForm() {
     document.getElementById("post-id").value = "";
 }
 
-function slugify(text) {
-    return text.toString().toLowerCase()
-        .replace(/\s+/g, '-')           // Replace spaces with -
-        .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
-        .replace(/\-\-+/g, '-')         // Replace multiple - with single -
-        .replace(/^-+/, '')             // Trim - from start of text
-        .replace(/-+$/, '');            // Trim - from end of text
-}
+// slugify is now in utils.js, but keep for backward compatibility
+// Will use from utils if available
 
 async function createTopic() {
     const name = prompt("Nhập tên Chủ đề (Topic Name):");
