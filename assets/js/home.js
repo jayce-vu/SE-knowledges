@@ -96,8 +96,8 @@ console.log("home.js script file loaded");
             }
 
             listContainer.innerHTML = data.map(post => {
-                const baseUrl = window.location.pathname.includes('/en/') ? '/en' : '';
-                const viewUrl = `${baseUrl}/SE-knowledges/view/?slug=${escapeHtml(post.slug)}`;
+                const baseUrl = getBaseUrl();
+                const viewUrl = `${baseUrl}/view/?slug=${escapeHtml(post.slug)}`;
                 
                 return `
                 <article class="post-preview">

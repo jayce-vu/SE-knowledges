@@ -5,7 +5,8 @@ document.addEventListener("DOMContentLoaded", function() {
     // Check Auth
     const token = localStorage.getItem("token");
     if (!token) {
-        window.location.href = "/login/";
+        const baseUrl = getBaseUrl();
+        window.location.href = `${baseUrl}/login/`;
         return;
     }
 
@@ -161,9 +162,28 @@ async function loadPosts() {
         const list = document.getElementById("post-list");
         list.innerHTML = '<li class="loading">Loading...</li>';
         
-        // Fetch all articles (default VI view for list)
-        const res = await fetch(`${API_URL}/api/articles?lang=vi`);
+        // Get auth token
+        const token = localStorage.getItem("token");
+        if (!token) {
+            const baseUrl = getBaseUrl();
+            window.location.href = `${baseUrl}/login/`;
+            return;
+        }
+        
+        // Fetch articles of current user only (default VI view for list)
+        const res = await fetch(`${API_URL}/api/admin/articles?lang=vi`, {
+            headers: {
+                "Authorization": token
+            }
+        });
+        
         if (!res.ok) {
+            if (res.status === 401) {
+                // Unauthorized - redirect to login
+                const baseUrl = getBaseUrl();
+                window.location.href = `${baseUrl}/login/`;
+                return;
+            }
             throw new Error("Failed to fetch articles");
         }
         
@@ -181,9 +201,9 @@ async function loadPosts() {
             const li = document.createElement("li");
             li.innerHTML = `
                 <strong>${escapeHtml(p.title)}</strong>
-                <div class="post-status">${formatDate(p.created_at)}</div>
+                <div class="post-status">${formatDate(p.created_at)} ${p.is_published ? '<span style="color: var(--accent);">✓ Published</span>' : '<span style="color: var(--muted);">Draft</span>'}</div>
             `;
-            li.addEventListener("click", () => loadPostDetails(p.id || p.slug));
+            li.addEventListener("click", () => loadPostDetails(p.id));
             list.appendChild(li);
         });
     } catch (e) {
@@ -194,16 +214,35 @@ async function loadPosts() {
 }
 
 async function loadPostDetails(identifier) {
-    // For admin, we need a special endpoint to get ALL translations
-    // Currently using the public one won't give us EN if we fetch VI
-    // So we use the /api/admin/articles/:id endpoint we created
+    // Get auth token
+    const token = localStorage.getItem("token");
+    if (!token) {
+        const baseUrl = getBaseUrl();
+        window.location.href = `${baseUrl}/login/`;
+        return;
+    }
     
-    // If identifier is slug, we might need to find ID first, but the list returns ID.
-    // Assuming identifier is ID here.
-    
-    // Note: The public list API returns 'id' of article parent.
     try {
-        const res = await fetch(`${API_URL}/api/admin/articles/${identifier}`);
+        const res = await fetch(`${API_URL}/api/admin/articles/${identifier}`, {
+            headers: {
+                "Authorization": token
+            }
+        });
+        
+        if (!res.ok) {
+            if (res.status === 401) {
+                const baseUrl = getBaseUrl();
+                window.location.href = `${baseUrl}/login/`;
+                return;
+            }
+            if (res.status === 403 || res.status === 404) {
+                alert("Access denied: You can only view your own articles");
+                loadPosts(); // Refresh list
+                return;
+            }
+            throw new Error("Failed to load article");
+        }
+        
         const data = await res.json();
         
         if (data.error) {
@@ -251,6 +290,14 @@ async function savePost() {
     btn.disabled = true;
 
     try {
+        // Get auth token
+        const token = localStorage.getItem("token");
+        if (!token) {
+            const baseUrl = getBaseUrl();
+            window.location.href = `${baseUrl}/login/`;
+            return;
+        }
+        
         const id = document.getElementById("post-id").value;
         const topic_id = document.getElementById("topic-select").value;
         const thumbnail_url = document.getElementById("thumbnail-url").value;
@@ -280,18 +327,11 @@ async function savePost() {
         // TODO: Implement "Create Tag" logic.
         const tags = []; 
 
-        // Get author_id from current user
-        const user = getCurrentUser();
-        if (!user || !user.id) {
-            alert("Error: User not logged in. Please login again.");
-            window.location.href = "/login/";
-            return;
-        }
-
+        // Note: author_id is set by backend based on current user token
+        // User cannot set author_id manually to prevent creating articles for others
         const payload = {
             id: id ? parseInt(id) : null,
             topic_id: topic_id ? parseInt(topic_id) : null,
-            author_id: user.id, // Get from logged in user
             thumbnail_url,
             is_published,
             tags,
@@ -302,7 +342,7 @@ async function savePost() {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token") 
+                "Authorization": token
             },
             body: JSON.stringify(payload)
         });
@@ -314,6 +354,16 @@ async function savePost() {
             loadPosts(); // Refresh list
             if (!id) document.getElementById("post-id").value = result.id;
         } else {
+            if (res.status === 401) {
+                const baseUrl = getBaseUrl();
+                window.location.href = `${baseUrl}/login/`;
+                return;
+            }
+            if (res.status === 403) {
+                showError("Access denied: You can only edit your own articles", "post-list");
+                loadPosts(); // Refresh list
+                return;
+            }
             showError(result.error || "Unknown error", "post-list");
         }
 
