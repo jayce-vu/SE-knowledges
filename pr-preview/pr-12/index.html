@@ -57,44 +57,39 @@
 </header>
 
     <main class="wrap">
-      <div class="panel">
-  <h1 style="margin-top: 0;">SE-knowledges</h1>
-  
-    <p class="post-meta">Technical notes in English.</p>
-  
-  <p>Welcome to my knowledge base. Here you can find technical notes and articles about software engineering.</p>
+      <div id="home-app">
+  <div class="panel">
+    <h1 style="margin-top: 0;">SE-knowledges</h1>
+    
+      <p class="post-meta">Technical notes in English.</p>
+    
+    <p>Welcome to my knowledge base. Here you can find technical notes and articles about software engineering.</p>
 
 <p><a href="/SE-knowledges/pr-preview/pr-12/vi/">Xem phiên bản Tiếng Việt</a></p>
 
+  </div>
+
+  <div style="height: 16px;"></div>
+
+  <!-- Filters / Loading State -->
+  <div class="filters" style="margin-bottom: 20px; text-align: center;">
+    <select id="topic-filter" style="padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
+      <option value="">All Topics</option>
+      <!-- JS will populate -->
+    </select>
+  </div>
+
+  <div id="loading-indicator" style="text-align: center; padding: 20px;">
+    Loading articles...
+  </div>
+
+  <!-- Article List Container -->
+  <div id="article-list" class="posts-list" style="display: none;">
+    <!-- JS will populate this -->
+  </div>
 </div>
 
-<div style="height: 16px;"></div>
-
-<div class="panel">
-  <!-- 
-    Logic lấy danh sách bài viết từ collection 'content'.
-    Lọc theo ngôn ngữ hiện tại của trang (page.lang) nếu có.
-  -->
-  
-  
-  
-    
-  
-
-  <h2 style="margin-top: 0;">Recent Posts</h2>
-  
-  <ul class="post-list">
-    
-      <li>
-        <div class="post-meta">2026-01-07 · <span class="pill">en</span></div>
-        <div><a href="/SE-knowledges/pr-preview/pr-12/security/secure-storage-banking-analysis/en/"><strong>DETAILED ANALYSIS: BANKING GRADE SECURE STORAGE (ANDROID & iOS)</strong></a></div>
-        
-          <div class="post-meta">Detailed analysis of Banking Grade Secure Storage on Android and iOS, including Android Keystore, iOS Keychain, Secure Enclave, and critical security standards.</div>
-        
-      </li>
-    
-  </ul>
-</div>
+<!-- Scripts are loaded in default.html layout -->
 
     </main>
     <footer class="site">
@@ -129,7 +124,7 @@
       <!-- Home page scripts -->
       <script src="/SE-knowledges/pr-preview/pr-12/assets/js/home.js"></script>
       <script>
-        console.log("Home page scripts loaded");
+        console.log("Home page scripts loaded for:", page.path || page.url);
       </script>
     
     
