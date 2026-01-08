@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>
+      Tiếng Việt · SE-knowledges
+    </title>
+    <link rel="icon" type="image/svg+xml" href="/SE-knowledges/pr-preview/pr-12/assets/favicon.svg">
+    <link rel="stylesheet" href="/SE-knowledges/pr-preview/pr-12/assets/css/style.css" />
+  </head>
+  <body>
+    <header class="site">
+  <div class="wrap nav">
+    <div class="brand">
+      <a class="title" href="/SE-knowledges/pr-preview/pr-12/">SE-knowledges</a>
+      <span class="subtitle">Technical notes and articles in Vietnamese and English.</span>
+    </div>
+    <div>
+      
+      
+      
+      
+
+      
+
+      
+        <a class="button" href="/SE-knowledges/pr-preview/pr-12/en/">English</a>
+        <a class="button" href="/SE-knowledges/pr-preview/pr-12/vi/">Tiếng Việt</a>
+      
+      
+      <!-- Auth Button (Hidden by default, JS toggles) -->
+      <a class="button" id="auth-btn" href="/SE-knowledges/pr-preview/pr-12/login.html" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem("token");
+      const authBtn = document.getElementById("auth-btn");
+      if (token) {
+        authBtn.textContent = "Admin";
+        authBtn.href = "/SE-knowledges/pr-preview/pr-12/admin.html";
+      }
+    });
+  </script>
+</header>
+
+    <main class="wrap">
+      <div class="panel">
+  <h1 style="margin-top: 0;">Tiếng Việt</h1>
+  
+    <p class="post-meta">Bài viết kỹ thuật bằng tiếng Việt.</p>
+  
+  <p>Bạn có thể dùng khu vực này để ghim series, link quan trọng, hoặc hướng dẫn “bắt đầu từ đâu”.</p>
+
+
+</div>
+
+<div style="height: 16px;"></div>
+
+<div class="panel">
+  <!-- 
+    Logic lấy danh sách bài viết từ collection 'content'.
+    Lọc theo ngôn ngữ hiện tại của trang (page.lang) nếu có.
+  -->
+  
+  
+  
+    
+  
+
+  <h2 style="margin-top: 0;">Bài viết mới</h2>
+  
+  <ul class="post-list">
+    
+      <li>
+        <div class="post-meta">2026-01-07 · <span class="pill">vi</span></div>
+        <div><a href="/SE-knowledges/pr-preview/pr-12/security/secure-storage-banking-analysis/vi/"><strong>PHÂN TÍCH CHI TIẾT: SECURE STORAGE CHUẨN BANKING (ANDROID & iOS)</strong></a></div>
+        
+          <div class="post-meta">Phân tích chi tiết về Secure Storage chuẩn Banking trên Android và iOS, bao gồm Android Keystore, iOS Keychain, Secure Enclave và các tiêu chuẩn bảo mật quan trọng.</div>
+        
+      </li>
+    
+  </ul>
+</div>
+
+    </main>
+    <footer class="site">
+  <div class="wrap">
+    <div class="panel">
+      <div>
+        <span class="pill">EN/VI</span>
+        <span class="pill">GitHub Pages</span>
+        <span class="pill">Jekyll</span>
+      </div>
+      <div style="margin-top: 10px;">
+        © 2026 SE-knowledges. Built with Jekyll on GitHub Pages.
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>
+

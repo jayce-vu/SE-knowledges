@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>
+      Changelog · SE-knowledges
+    </title>
+    <link rel="icon" type="image/svg+xml" href="/SE-knowledges/pr-preview/pr-12/assets/favicon.svg">
+    <link rel="stylesheet" href="/SE-knowledges/pr-preview/pr-12/assets/css/style.css" />
+  </head>
+  <body>
+    <header class="site">
+  <div class="wrap nav">
+    <div class="brand">
+      <a class="title" href="/SE-knowledges/pr-preview/pr-12/">SE-knowledges</a>
+      <span class="subtitle">Technical notes and articles in Vietnamese and English.</span>
+    </div>
+    <div>
+      
+      
+      
+      
+
+      
+
+      
+        <a class="button" href="/SE-knowledges/pr-preview/pr-12/en/">English</a>
+        <a class="button" href="/SE-knowledges/pr-preview/pr-12/vi/">Tiếng Việt</a>
+      
+      
+      <!-- Auth Button (Hidden by default, JS toggles) -->
+      <a class="button" id="auth-btn" href="/SE-knowledges/pr-preview/pr-12/login.html" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem("token");
+      const authBtn = document.getElementById("auth-btn");
+      if (token) {
+        authBtn.textContent = "Admin";
+        authBtn.href = "/SE-knowledges/pr-preview/pr-12/admin.html";
+      }
+    });
+  </script>
+</header>
+
+    <main class="wrap">
+      <h1 id="changelog">Changelog</h1>
+
+<p>Tất cả các thay đổi đáng chú ý trong project này sẽ được ghi lại trong file này.</p>
+
+<h2 id="210---2024-01-xx">[2.1.0] - 2024-01-XX</h2>
+
+<h3 id="-changed">🔄 Changed</h3>
+<ul>
+  <li><strong>View Count Logic</strong>: Đếm view theo <code class="language-plaintext highlighter-rouge">article_id</code> thay vì <code class="language-plaintext highlighter-rouge">slug</code>
+    <ul>
+      <li>View count được tổng hợp cho tất cả ngôn ngữ của cùng một bài viết</li>
+      <li>Ví dụ: Bài viết có slug <code class="language-plaintext highlighter-rouge">bai-viet-tieng-viet</code> (vi) và <code class="language-plaintext highlighter-rouge">article-in-english</code> (en) sẽ có cùng view count</li>
+      <li>Rate limiting vẫn dùng slug để tránh spam theo từng ngôn ngữ</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="-database-changes">📝 Database Changes</h3>
+<ul>
+  <li><strong>Schema Update</strong>: <code class="language-plaintext highlighter-rouge">post_views</code> table thay đổi từ <code class="language-plaintext highlighter-rouge">slug TEXT PRIMARY KEY</code> sang <code class="language-plaintext highlighter-rouge">article_id INTEGER PRIMARY KEY</code></li>
+  <li><strong>Migration Script</strong>: Thêm <code class="language-plaintext highlighter-rouge">migrate_views_to_article_id.sql</code> để migrate dữ liệu cũ</li>
+</ul>
+
+<h3 id="️-breaking-changes">⚠️ Breaking Changes</h3>
+<ul>
+  <li><strong>Database Schema</strong>: Cần chạy migration script nếu đã có dữ liệu</li>
+  <li><strong>API Behavior</strong>: View count giờ đây là tổng hợp cho tất cả ngôn ngữ</li>
+</ul>
+
+<hr />
+
+<h2 id="200---2024-01-xx">[2.0.0] - 2024-01-XX</h2>
+
+<h3 id="-added">✨ Added</h3>
+<ul>
+  <li><strong>Health Check Endpoint</strong>: Thêm <code class="language-plaintext highlighter-rouge">/health</code> endpoint để monitor worker status</li>
+  <li><strong>Pagination</strong>: GET <code class="language-plaintext highlighter-rouge">/api/articles</code> hỗ trợ pagination với <code class="language-plaintext highlighter-rouge">limit</code> và <code class="language-plaintext highlighter-rouge">offset</code></li>
+  <li><strong>Input Validation</strong>:
+    <ul>
+      <li>Email format validation</li>
+      <li>Slug format validation (<code class="language-plaintext highlighter-rouge">^[a-z0-9_-]+$</code>)</li>
+      <li>Required fields validation</li>
+      <li>Length validation (username, password, content)</li>
+    </ul>
+  </li>
+  <li><strong>Helper Functions</strong>:
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">safeJsonParse()</code> - Safe JSON parsing với error handling</li>
+      <li><code class="language-plaintext highlighter-rouge">validateRequired()</code> - Validate required fields</li>
+      <li><code class="language-plaintext highlighter-rouge">validateEmail()</code> - Validate email format</li>
+      <li><code class="language-plaintext highlighter-rouge">validateSlug()</code> - Validate slug format</li>
+      <li><code class="language-plaintext highlighter-rouge">sanitizeError()</code> - Sanitize error messages</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="-improved">🔧 Improved</h3>
+<ul>
+  <li><strong>Error Handling</strong>:
+    <ul>
+      <li>Tất cả <code class="language-plaintext highlighter-rouge">await request.json()</code> đều có error handling</li>
+      <li>Error messages được sanitize (ẩn internal errors trong production)</li>
+      <li>Proper HTTP status codes (201 cho create, 200 cho update)</li>
+    </ul>
+  </li>
+  <li><strong>CORS Configuration</strong>:
+    <ul>
+      <li>Có thể config qua env variable <code class="language-plaintext highlighter-rouge">ALLOWED_ORIGIN</code></li>
+      <li>Mặc định vẫn là <code class="language-plaintext highlighter-rouge">*</code> nhưng có thể giới hạn trong production</li>
+    </ul>
+  </li>
+  <li><strong>API Response</strong>:
+    <ul>
+      <li>GET <code class="language-plaintext highlighter-rouge">/api/articles</code> trả về object với <code class="language-plaintext highlighter-rouge">data</code> và <code class="language-plaintext highlighter-rouge">pagination</code> metadata</li>
+      <li>Error responses nhất quán với format <code class="language-plaintext highlighter-rouge">{ error: "message" }</code></li>
+    </ul>
+  </li>
+  <li><strong>Validation</strong>:
+    <ul>
+      <li>Slug validation cho tất cả endpoints sử dụng slug</li>
+      <li>Email validation cho register và comments</li>
+      <li>Content length validation cho comments</li>
+      <li>Username và password length validation</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="-fixed">🐛 Fixed</h3>
+<ul>
+  <li><strong>JSON Parsing</strong>: Fix crash khi nhận invalid JSON body</li>
+  <li><strong>Status Codes</strong>: Fix status code cho POST <code class="language-plaintext highlighter-rouge">/api/admin/articles</code> (200 cho update, 201 cho create)</li>
+  <li><strong>Error Messages</strong>: Fix information disclosure trong error messages</li>
+  <li><strong>Slug Validation</strong>: Thêm validation cho slug format trong view count endpoint</li>
+</ul>
+
+<h3 id="-documentation">📝 Documentation</h3>
+<ul>
+  <li>Cập nhật <code class="language-plaintext highlighter-rouge">API_DOCUMENTATION.md</code> với:
+    <ul>
+      <li>Health check endpoint</li>
+      <li>Pagination parameters</li>
+      <li>Validation requirements</li>
+      <li>Error handling improvements</li>
+    </ul>
+  </li>
+  <li>Cập nhật <code class="language-plaintext highlighter-rouge">wrangler.toml</code> với env variables documentation</li>
+</ul>
+
+<h3 id="️-breaking-changes-1">⚠️ Breaking Changes</h3>
+<ul>
+  <li>GET <code class="language-plaintext highlighter-rouge">/api/articles</code> response format thay đổi:
+    <ul>
+      <li><strong>Trước</strong>: <code class="language-plaintext highlighter-rouge">Array&lt;Article&gt;</code></li>
+      <li><strong>Sau</strong>: <code class="language-plaintext highlighter-rouge">{ data: Array&lt;Article&gt;, pagination: {...} }</code></li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="-security">🔒 Security</h3>
+<ul>
+  <li>Sanitize error messages để tránh information disclosure</li>
+  <li>Input validation để tránh invalid data</li>
+  <li>Slug validation để tránh injection attacks</li>
+</ul>
+
+<hr />
+
+<h2 id="100---initial-release">[1.0.0] - Initial Release</h2>
+
+<h3 id="-features">✨ Features</h3>
+<ul>
+  <li>View count API với rate limiting</li>
+  <li>Public articles API (list và detail)</li>
+  <li>Comments API (get và create)</li>
+  <li>Admin API (create/update articles)</li>
+  <li>Topics và Tags API</li>
+  <li>Auth API (register và login)</li>
+  <li>D1 Database integration</li>
+  <li>CORS support</li>
+</ul>
+
+<hr />
+
+<h2 id="format">Format</h2>
+
+<p>Format dựa trên <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
+và project này tuân thủ <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+
+<h3 id="types-of-changes">Types of Changes</h3>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Added</code> - Tính năng mới</li>
+  <li><code class="language-plaintext highlighter-rouge">Changed</code> - Thay đổi trong functionality hiện tại</li>
+  <li><code class="language-plaintext highlighter-rouge">Deprecated</code> - Tính năng sắp bị loại bỏ</li>
+  <li><code class="language-plaintext highlighter-rouge">Removed</code> - Tính năng đã bị loại bỏ</li>
+  <li><code class="language-plaintext highlighter-rouge">Fixed</code> - Bug fixes</li>
+  <li><code class="language-plaintext highlighter-rouge">Security</code> - Security fixes</li>
+</ul>
+
+
+    </main>
+    <footer class="site">
+  <div class="wrap">
+    <div class="panel">
+      <div>
+        <span class="pill">EN/VI</span>
+        <span class="pill">GitHub Pages</span>
+        <span class="pill">Jekyll</span>
+      </div>
+      <div style="margin-top: 10px;">
+        © 2026 SE-knowledges. Built with Jekyll on GitHub Pages.
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>
+

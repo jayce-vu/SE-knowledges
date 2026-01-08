@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>
+      SE-knowledges
+    </title>
+    <link rel="icon" type="image/svg+xml" href="/SE-knowledges/pr-preview/pr-12/assets/favicon.svg">
+    <link rel="stylesheet" href="/SE-knowledges/pr-preview/pr-12/assets/css/style.css" />
+  </head>
+  <body>
+    <header class="site">
+  <div class="wrap nav">
+    <div class="brand">
+      <a class="title" href="/SE-knowledges/pr-preview/pr-12/">SE-knowledges</a>
+      <span class="subtitle">Technical notes and articles in Vietnamese and English.</span>
+    </div>
+    <div>
+      
+      
+      
+      
+
+      
+
+      
+        <a class="button" href="/SE-knowledges/pr-preview/pr-12/en/">English</a>
+        <a class="button" href="/SE-knowledges/pr-preview/pr-12/vi/">Tiếng Việt</a>
+      
+      
+      <!-- Auth Button (Hidden by default, JS toggles) -->
+      <a class="button" id="auth-btn" href="/SE-knowledges/pr-preview/pr-12/login.html" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem("token");
+      const authBtn = document.getElementById("auth-btn");
+      if (token) {
+        authBtn.textContent = "Admin";
+        authBtn.href = "/SE-knowledges/pr-preview/pr-12/admin.html";
+      }
+    });
+  </script>
+</header>
+
+    <main class="wrap">
+      <div id="article-app">
+    <div id="loading" style="text-align: center; padding: 50px;">
+        Loading article...
+    </div>
+
+    <article id="article-content" style="display: none;">
+        <header class="intro-header" id="header-bg" style="background-image: url('/SE-knowledges/pr-preview/pr-12/assets/img/home-bg.jpg')">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                        <div class="post-heading">
+                            <h1 id="post-title">Title</h1>
+                            <h2 class="subheading" id="post-excerpt"></h2>
+                            <span class="meta">Posted by <span id="post-author">Author</span> on <span id="post-date">Date</span></span>
+                            
+                            <!-- Language Switcher -->
+                            <div class="lang-switcher" style="margin-top: 20px;">
+                                <button id="btn-vi" class="btn btn-default btn-xs">Tiếng Việt</button>
+                                <button id="btn-en" class="btn btn-default btn-xs">English</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div id="markdown-body">
+                        <!-- Content -->
+                    </div>
+
+                    <hr>
+                    <!-- Comments Section -->
+                    <div class="comments-section">
+                        <h3>Comments</h3>
+                        <div id="comments-list"></div>
+                        <form id="comment-form" style="margin-top: 20px;">
+                            <div class="form-group">
+                                <textarea id="comment-content" class="form-control" placeholder="Write a comment..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+</div>
+
+<!-- Marked.js -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+    window.API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+    window.VIEW_API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+</script>
+<script src="/SE-knowledges/pr-preview/pr-12/assets/js/utils.js"></script>
+<script src="/SE-knowledges/pr-preview/pr-12/assets/js/article-viewer.js"></script>
+
+    </main>
+    <footer class="site">
+  <div class="wrap">
+    <div class="panel">
+      <div>
+        <span class="pill">EN/VI</span>
+        <span class="pill">GitHub Pages</span>
+        <span class="pill">Jekyll</span>
+      </div>
+      <div style="margin-top: 10px;">
+        © 2026 SE-knowledges. Built with Jekyll on GitHub Pages.
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>
+

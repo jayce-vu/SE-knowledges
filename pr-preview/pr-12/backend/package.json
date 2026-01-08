@@ -1,0 +1,27 @@
+{
+  "name": "blog-views-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for blog view counting",
+  "main": "worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "d1:create": "wrangler d1 create blog-views-db",
+    "d1:migrate": "wrangler d1 execute blog-views-db --file=./schema.sql",
+    "d1:migrate:preview": "wrangler d1 execute blog-views-db --file=./schema.sql --preview",
+    "d1:query": "wrangler d1 execute blog-views-db --command"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "blog",
+    "views"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
+
