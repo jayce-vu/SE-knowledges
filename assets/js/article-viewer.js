@@ -54,13 +54,24 @@
             document.getElementById("post-author").textContent = data.author_name || "Unknown";
             document.getElementById("post-date").textContent = formatDate(data.created_at);
             
-            // Set header background if thumbnail exists
-            const headerEl = document.getElementById("post-header");
-            if (data.thumbnail_url && headerEl) {
-                headerEl.style.backgroundImage = `linear-gradient(rgba(11, 16, 32, 0.85), rgba(11, 16, 32, 0.85)), url('${escapeHtml(data.thumbnail_url)}')`;
-                headerEl.style.backgroundSize = "cover";
-                headerEl.style.backgroundPosition = "center";
+            // Display thumbnail image if exists
+            const thumbnailContainer = document.getElementById("post-thumbnail-container");
+            const thumbnailImg = document.getElementById("post-thumbnail");
+            if (data.thumbnail_url && thumbnailContainer && thumbnailImg) {
+                thumbnailImg.src = escapeHtml(data.thumbnail_url);
+                thumbnailImg.alt = data.title || "Article thumbnail";
+                thumbnailContainer.style.display = "block";
+            } else if (thumbnailContainer) {
+                thumbnailContainer.style.display = "none";
             }
+            
+            // Update Open Graph and Twitter Card meta tags for social sharing
+            updateSocialMetaTags({
+                title: data.title || "",
+                description: data.excerpt || data.title || "",
+                image: data.thumbnail_url || "",
+                url: window.location.href
+            });
 
             // Render Content (Markdown with syntax highlighting)
             if (typeof marked !== 'undefined') {
@@ -98,6 +109,104 @@
         } catch (e) {
             console.error("Error loading article:", e);
             showError("Error loading article. Please try again later.", "loading");
+        }
+    }
+    
+    // Update social media meta tags dynamically for ALL platforms
+    function updateSocialMetaTags({ title, description, image, url }) {
+        // Helper function to update or create meta tags
+        const updateMetaTag = (property, content, isProperty = true) => {
+            if (!content) return;
+            
+            let meta = document.querySelector(
+                isProperty 
+                    ? `meta[property="${property}"]` 
+                    : `meta[name="${property}"]`
+            );
+            
+            if (!meta) {
+                meta = document.createElement('meta');
+                if (isProperty) {
+                    meta.setAttribute('property', property);
+                } else {
+                    meta.setAttribute('name', property);
+                }
+                document.head.appendChild(meta);
+            }
+            
+            meta.setAttribute('content', content);
+        };
+        
+        // Update title (for all platforms)
+        if (title) {
+            document.title = `${title} · SE-knowledges`;
+            updateMetaTag('og:title', title);
+            updateMetaTag('twitter:title', title, false);
+        }
+        
+        // Update description (for all platforms)
+        if (description) {
+            // Limit description length for better display
+            const shortDescription = description.length > 200 
+                ? description.substring(0, 197) + '...' 
+                : description;
+            
+            updateMetaTag('description', shortDescription, false);
+            updateMetaTag('og:description', shortDescription);
+            updateMetaTag('twitter:description', shortDescription, false);
+        }
+        
+        // Update image (for all platforms)
+        if (image) {
+            // Ensure absolute URL
+            let imageUrl = image;
+            if (!image.startsWith('http://') && !image.startsWith('https://')) {
+                try {
+                    imageUrl = new URL(image, window.location.origin).href;
+                } catch (e) {
+                    // If URL construction fails, try relative to origin
+                    imageUrl = window.location.origin + (image.startsWith('/') ? image : '/' + image);
+                }
+            }
+            
+            // Open Graph image (Facebook, LinkedIn, WhatsApp, Telegram, Discord, Slack)
+            updateMetaTag('og:image', imageUrl);
+            updateMetaTag('og:image:secure_url', imageUrl); // For HTTPS
+            updateMetaTag('og:image:type', 'image/jpeg'); // Default, can be improved
+            
+            // Twitter Card image
+            updateMetaTag('twitter:image', imageUrl, false);
+            updateMetaTag('twitter:image:src', imageUrl, false); // Legacy support
+            
+            // Image alt text
+            if (title) {
+                updateMetaTag('og:image:alt', title);
+            }
+        }
+        
+        // Update URL (for all platforms)
+        if (url) {
+            updateMetaTag('og:url', url);
+            updateMetaTag('twitter:url', url, false);
+        }
+        
+        // Set article type for blog posts (better for Facebook, LinkedIn)
+        updateMetaTag('og:type', 'article');
+        
+        // Additional meta tags for better compatibility
+        // Article published time (if available)
+        const publishedTime = document.querySelector('meta[property="article:published_time"]');
+        if (!publishedTime) {
+            const meta = document.createElement('meta');
+            meta.setAttribute('property', 'article:published_time');
+            meta.setAttribute('content', new Date().toISOString());
+            document.head.appendChild(meta);
+        }
+        
+        // Author (if available)
+        const authorEl = document.getElementById('post-author');
+        if (authorEl && authorEl.textContent) {
+            updateMetaTag('article:author', authorEl.textContent.trim());
         }
     }
 
