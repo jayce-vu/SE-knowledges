@@ -8,6 +8,10 @@
     </title>
     <link rel="icon" type="image/svg+xml" href="/SE-knowledges/pr-preview/pr-12/assets/favicon.svg">
     <link rel="stylesheet" href="/SE-knowledges/pr-preview/pr-12/assets/css/style.css" />
+    
+      <!-- Highlight.js CSS for article viewer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+    
   </head>
   <body>
     <header class="site">
@@ -119,18 +123,7 @@
     </div>
 </div>
 
-<!-- Marked.js for Markdown parsing -->
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<!-- Highlight.js for syntax highlighting -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
-<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
-
-<script>
-    window.API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
-    window.VIEW_API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
-</script>
-<script src="/SE-knowledges/pr-preview/pr-12/assets/js/utils.js"></script>
-<script src="/SE-knowledges/pr-preview/pr-12/assets/js/article-viewer.js"></script>
+<!-- Scripts are loaded in default.html layout -->
 
     </main>
     <footer class="site">
@@ -149,6 +142,38 @@
 </footer>
 
 
+    
+    <!-- Global API Configuration -->
+    <script>
+      window.API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      window.VIEW_API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      console.log("API URL configured:", window.API_URL);
+    </script>
+    
+    <!-- Load utils.js for all pages -->
+    <script src="/SE-knowledges/pr-preview/pr-12/assets/js/utils.js"></script>
+    
+    <!-- Page-specific scripts -->
+    
+    
+    
+      <!-- Article viewer scripts -->
+      <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
+      <script src="/SE-knowledges/pr-preview/pr-12/assets/js/article-viewer.js"></script>
+      <script>
+        console.log("Article viewer scripts loaded");
+      </script>
+    
+    
+    
+    
+    
+    
+    <!-- Verify utils loaded -->
+    <script>
+      console.log("Utils loaded:", typeof parseApiResponse !== 'undefined');
+    </script>
   </body>
 </html>
 

@@ -8,6 +8,7 @@
     </title>
     <link rel="icon" type="image/svg+xml" href="/SE-knowledges/pr-preview/pr-12/assets/favicon.svg">
     <link rel="stylesheet" href="/SE-knowledges/pr-preview/pr-12/assets/css/style.css" />
+    
   </head>
   <body>
     <header class="site">
@@ -112,6 +113,36 @@
 </footer>
 
 
+    
+    <!-- Global API Configuration -->
+    <script>
+      window.API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      window.VIEW_API_URL = "https://se-knowledges.jayce-it-work.workers.dev";
+      console.log("API URL configured:", window.API_URL);
+    </script>
+    
+    <!-- Load utils.js for all pages -->
+    <script src="/SE-knowledges/pr-preview/pr-12/assets/js/utils.js"></script>
+    
+    <!-- Page-specific scripts -->
+    
+      <!-- Home page scripts -->
+      <script src="/SE-knowledges/pr-preview/pr-12/assets/js/home.js"></script>
+      <script>
+        console.log("Home page scripts loaded");
+      </script>
+    
+    
+    
+    
+    
+    
+    
+    
+    <!-- Verify utils loaded -->
+    <script>
+      console.log("Utils loaded:", typeof parseApiResponse !== 'undefined');
+    </script>
   </body>
 </html>
 
