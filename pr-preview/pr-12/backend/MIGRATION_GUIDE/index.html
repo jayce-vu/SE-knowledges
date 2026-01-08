@@ -31,6 +31,8 @@
       
       <!-- Auth Button (Hidden by default, JS toggles) -->
       <a class="button" id="auth-btn" href="/SE-knowledges/pr-preview/pr-12/login/" style="margin-left: 10px; border: 1px solid #ddd;">Login</a>
+      <!-- New Post Button (Only visible when logged in) -->
+      <a class="button" id="new-post-btn" href="/SE-knowledges/pr-preview/pr-12/admin/" style="margin-left: 10px; border: 1px solid #7ee787; background: rgba(126, 231, 135, 0.1); display: none;">+ New Post</a>
     </div>
   </div>
   
@@ -38,9 +40,16 @@
     document.addEventListener("DOMContentLoaded", () => {
       const token = localStorage.getItem("token");
       const authBtn = document.getElementById("auth-btn");
+      const newPostBtn = document.getElementById("new-post-btn");
+      
       if (token) {
+        // User is logged in
         authBtn.textContent = "Admin";
         authBtn.href = "/SE-knowledges/pr-preview/pr-12/admin/";
+        newPostBtn.style.display = "inline-block";
+      } else {
+        // User is not logged in
+        newPostBtn.style.display = "none";
       }
     });
   </script>
