@@ -65,15 +65,4 @@ layout: default
     </div>
 </div>
 
-<!-- Marked.js for Markdown parsing -->
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<!-- Highlight.js for syntax highlighting -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
-<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
-
-<script>
-    window.API_URL = "{{ site.view_api_url }}";
-    window.VIEW_API_URL = "{{ site.view_api_url }}";
-</script>
-<script src="{{ '/assets/js/utils.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/article-viewer.js' | relative_url }}"></script>
+<!-- Scripts are loaded in default.html layout -->

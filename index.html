@@ -20,16 +20,3 @@ layout: default
         <!-- JS will populate this -->
     </div>
 </div>
-
-<script>
-    window.API_URL = "{{ site.view_api_url }}";
-    window.VIEW_API_URL = "{{ site.view_api_url }}";
-    console.log("API URL configured:", window.API_URL);
-</script>
-<script src="{{ '/assets/js/utils.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/home.js' | relative_url }}"></script>
-<script>
-    // Verify scripts loaded
-    console.log("Utils loaded:", typeof parseApiResponse !== 'undefined');
-    console.log("Home script loaded:", typeof window !== 'undefined');
-</script>

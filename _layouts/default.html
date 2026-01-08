@@ -8,6 +8,10 @@
     </title>
     <link rel="icon" type="image/svg+xml" href="{{ '/assets/favicon.svg' | relative_url }}">
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}" />
+    {% if page.path == 'view.html' or page.url contains '/view' %}
+      <!-- Highlight.js CSS for article viewer -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+    {% endif %}
   </head>
   <body>
     {% include header.html %}
@@ -15,6 +19,57 @@
       {{ content }}
     </main>
     {% include footer.html %}
+    
+    <!-- Global API Configuration -->
+    <script>
+      window.API_URL = "{{ site.view_api_url }}";
+      window.VIEW_API_URL = "{{ site.view_api_url }}";
+      console.log("API URL configured:", window.API_URL);
+    </script>
+    
+    <!-- Load utils.js for all pages -->
+    <script src="{{ '/assets/js/utils.js' | relative_url }}"></script>
+    
+    <!-- Page-specific scripts -->
+    {% if page.path == 'index.html' or page.url == '/' %}
+      <!-- Home page scripts -->
+      <script src="{{ '/assets/js/home.js' | relative_url }}"></script>
+      <script>
+        console.log("Home page scripts loaded");
+      </script>
+    {% endif %}
+    
+    {% if page.path == 'view.html' or page.url contains '/view' %}
+      <!-- Article viewer scripts -->
+      <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
+      <script src="{{ '/assets/js/article-viewer.js' | relative_url }}"></script>
+      <script>
+        console.log("Article viewer scripts loaded");
+      </script>
+    {% endif %}
+    
+    {% if page.path == 'login.html' or page.url contains '/login' %}
+      <!-- Login page scripts -->
+      <script src="{{ '/assets/js/auth.js' | relative_url }}"></script>
+      <script>
+        console.log("Auth scripts loaded");
+      </script>
+    {% endif %}
+    
+    {% if page.path == 'admin.html' or page.url contains '/admin' %}
+      <!-- Admin page scripts -->
+      <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+      <script src="{{ '/assets/js/admin.js' | relative_url }}"></script>
+      <script>
+        console.log("Admin scripts loaded");
+      </script>
+    {% endif %}
+    
+    <!-- Verify utils loaded -->
+    <script>
+      console.log("Utils loaded:", typeof parseApiResponse !== 'undefined');
+    </script>
   </body>
 </html>
 
