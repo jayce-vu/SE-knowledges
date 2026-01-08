@@ -69,7 +69,7 @@
                 if (isLogin) {
                     localStorage.setItem("token", data.token);
                     localStorage.setItem("user", JSON.stringify(data.user));
-                    window.location.href = "/admin.html";
+                    window.location.href = "/admin/";
                 } else {
                     alert("Registration successful! Please login.");
                     // Switch to login mode

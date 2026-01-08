@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Check Auth
     const token = localStorage.getItem("token");
     if (!token) {
-        window.location.href = "/login.html";
+        window.location.href = "/login/";
         return;
     }
 
@@ -190,7 +190,7 @@ async function savePost() {
         const user = getCurrentUser();
         if (!user || !user.id) {
             alert("Error: User not logged in. Please login again.");
-            window.location.href = "/login.html";
+            window.location.href = "/login/";
             return;
         }
 
